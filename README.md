@@ -286,6 +286,8 @@ npm run preview
 
 ## License
 
-You can use this under the MIT License. See [LICENSE](LICENSE) for more details.#   O N L I N E - I D E  
- #   O N L I N E - I D E  
+You can use this under the MIT License. See [LICENSE](LICENSE) for more details.#   O N L I N E - I D E 
+ 
+ #   O N L I N E - I D E 
+ 
  
