@@ -213,7 +213,7 @@ const EditorRoutes = ({ isDarkMode }) => (
         element={<ProtectedRoute element={<Accounts />} />}
       />
 
-      <Route path="/" element={<NavigationLinks />} />
+      <Route path="/" element={<NavigationLinks isDarkMode={isDarkMode} />} />
 
       <Route
         path="/htmlcssjs"

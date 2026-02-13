@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import SharedLinks from "./SharedLinks";
+import PistonEditor from "./PistonEditor";
 
 const navLinks = [
   {
@@ -105,7 +106,7 @@ const navLinks = [
   },
 ];
 
-const NavigationLinks = () => {
+const NavigationLinks = ({ isDarkMode = true }) => {
   const baseUrl = window.location.origin;
 
   useEffect(() => {
@@ -127,6 +128,11 @@ const NavigationLinks = () => {
               {text}
             </Link>
           ))}
+        </div>
+      </div>
+      <div className="max-w-6xl mx-auto w-full px-4 pb-6">
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/60 shadow-sm">
+          <PistonEditor isDarkMode={isDarkMode} />
         </div>
       </div>
       <SharedLinks />
