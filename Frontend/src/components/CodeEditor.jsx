@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import MonacoEditor from "@monaco-editor/react";
+import SimpleTerminal from "./SimpleTerminal";
+import InputHelperModal from "./InputHelperModal";
 import ShareLinkModal from "../utils/ShareLinkModal.js";
-import { apiFetch } from "../utils/apifetch";
+import { executeCode } from "../utils/pistonApi";
 import {
   SESSION_STORAGE_SHARELINKS_KEY,
   LOCAL_STORAGE_TOKEN_KEY,
@@ -20,7 +22,6 @@ import {
   FaWrench,
 } from "react-icons/fa6";
 import { FaMagic, FaTrashAlt, FaShare } from "react-icons/fa";
-import { BiTerminal } from "react-icons/bi";
 import { GiBrain } from "react-icons/gi";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 
@@ -28,13 +29,13 @@ const CodeEditor = ({
   title,
   language,
   reactIcon,
-  apiEndpoint,
   isDarkMode,
   defaultCode,
   shareIdData,
 }) => {
   const codeStorageKey = `__${shareIdData || language}Code__`;
   const outputStorageKey = `__${shareIdData || language}Output__`;
+  const stdinStorageKey = `__${shareIdData || language}Stdin__`;
 
   const [code, setCode] = useState(
     sessionStorage.getItem(codeStorageKey) || defaultCode || ""
@@ -42,6 +43,9 @@ const CodeEditor = ({
   const [output, setOutput] = useState(
     sessionStorage.getItem(outputStorageKey) ||
       "Run your code to see output here..."
+  );
+  const [stdin, setStdin] = useState(
+    sessionStorage.getItem(stdinStorageKey) || ""
   );
   const [deviceType, setDeviceType] = useState("pc");
   const [cpyBtnState, setCpyBtnState] = useState("Copy");
@@ -54,6 +58,7 @@ const CodeEditor = ({
   const [isDownloadBtnPressed, setisDownloadBtnPressed] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isEditorReadOnly, setIsEditorReadOnly] = useState(false);
+  const [showInputHelper, setShowInputHelper] = useState(false);
 
   const terminalRef = useRef(null);
   const editorRef = useRef(null);
@@ -90,6 +95,7 @@ const CodeEditor = ({
   useEffect(() => {
     const savedCode = sessionStorage.getItem(codeStorageKey);
     const savedOutput = sessionStorage.getItem(outputStorageKey);
+    const savedStdin = sessionStorage.getItem(stdinStorageKey);
 
     if (savedCode && savedCode.trim().length !== 0) {
       setCode(savedCode);
@@ -111,6 +117,12 @@ const CodeEditor = ({
       setOutput(savedOutput);
     } else {
       setOutput("Run your code to see output here...");
+    }
+
+    if (typeof savedStdin === "string") {
+      setStdin(savedStdin);
+    } else {
+      setStdin("");
     }
 
     const token = localStorage.getItem(LOCAL_STORAGE_TOKEN_KEY);
@@ -143,7 +155,20 @@ const CodeEditor = ({
     if (output !== sessionStorage.getItem(outputStorageKey) || output === "") {
       sessionStorage.setItem(outputStorageKey, output);
     }
-  }, [code, output, language]);
+
+    if (stdin !== sessionStorage.getItem(stdinStorageKey) || stdin === "") {
+      sessionStorage.setItem(stdinStorageKey, stdin);
+    }
+  }, [code, output, stdin, language]);
+
+  useEffect(() => {
+    if (!output || output === "Run your code to see output here...") return;
+    
+    if (terminalRef.current) {
+      terminalRef.current.clear();
+      terminalRef.current.write(output);
+    }
+  }, [output]);
 
   const handleEditorDidMount = (editor, monaco) => {
     editorRef.current = editor;
@@ -168,79 +193,36 @@ const CodeEditor = ({
     setisDownloadBtnPressed(true);
 
     try {
-      const response = await apiFetch(apiEndpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          language: language,
-          code: code,
-        }),
+      setOutput("");
+      if (terminalRef.current) {
+        terminalRef.current.clear();
+      }
+
+      console.log("🚀 Running code with inputs:", {
+        language,
+        codeLength: code.length,
+        stdinLength: stdin.length,
+        stdinValue: stdin,
       });
 
-      if (!response.ok || !response.body) {
-        throw new Error("Failed to run code.");
-      }
+      const result = await executeCode(language, code, stdin);
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder("utf-8");
+      if (!result.success) {
+        const errorMessage = result.output || result.error || "Failed to run code.";
+        setOutput(errorMessage);
+      } else {
+        const combinedOutput = [
+          result.compileOutput,
+          result.compileStderr,
+          result.stdout,
+          result.stderr,
+        ]
+          .filter(Boolean)
+          .join("\n")
+          .trim();
 
-      let isFirstChunk = true;
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-
-        if (isFirstChunk) {
-          setOutput("");
-
-          if (terminalRef.current) {
-            terminalRef.current.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          }
-
-          isFirstChunk = false;
-        }
-
-        setOutput((prev) => {
-          const updatedOutput = prev + chunk;
-
-          setTimeout(() => {
-            requestAnimationFrame(() => {
-              if (terminalRef.current) {
-                terminalRef.current.scrollTop =
-                  terminalRef.current.scrollHeight;
-              }
-            });
-          }, 0);
-
-          return updatedOutput;
-        });
-      }
-
-      if (output.length !== 0) {
-        const now = new Date();
-        const timeString = now.toLocaleTimeString(undefined, {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false,
-        });
-
-        const dateString = now.toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "long",
-          day: "2-digit",
-        });
-
-        const completedMsg = `\n\n--- Completed @ ${timeString} on ${dateString} ---`;
-
-        setOutput((prev) => prev + completedMsg);
+        const finalOutput = combinedOutput || "Program finished with no output.";
+        setOutput(finalOutput);
       }
 
       if (isLoggedIn) {
@@ -249,16 +231,6 @@ const CodeEditor = ({
     } catch (error) {
       setOutput("Failed!! Try again.");
     } finally {
-      if (terminalRef.current) {
-        setTimeout(() => {
-          requestAnimationFrame(() => {
-            if (terminalRef.current) {
-              terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
-            }
-          });
-        }, 0);
-      }
-
       setIsEditorReadOnly(false);
       setLoadingActionRun(null);
       setisDownloadBtnPressed(false);
@@ -267,7 +239,11 @@ const CodeEditor = ({
 
   const clearAll = () => {
     setCode("");
+    setStdin("");
     setOutput("Run your code to see output here...");
+    if (terminalRef.current) {
+      terminalRef.current.clear();
+    }
   };
 
   const handleCopy = async () => {
@@ -1159,26 +1135,38 @@ const CodeEditor = ({
   ];
 
   const RenderOutput = () => (
-    <>
-      <div className="mt-4">
-        <div className="dark:bg-gray-800 dark:border-gray-700 bg-gray-300 rounded-t-lg p-2">
-          <div className="flex items-center space-x-2">
-            <BiTerminal className="ml-2 text-2xl" />
-            <h2 className="text-xl">Output</h2>
-          </div>
-        </div>
-
-        <pre
-          ref={terminalRef}
-          className="select-text font-mono text-xs font-semibold lg:text-sm focus:outline-none min-h-20 max-h-[295px] overflow-auto p-3 rounded-b-lg [scrollbar-width:thin] bg-[#eaeaea] text-[#292929] dark:bg-[#262636] dark:text-[#24a944]"
-        >
-          {output}
-        </pre>
+    <div className="mt-4 space-y-4">
+      <div>
+        <label className="block text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">
+          📤 Output
+        </label>
+        <SimpleTerminal ref={terminalRef} />
       </div>
-      <p className="ml-2 text-sm text-gray-500 italic">
-        Output may not be accurate.
-      </p>
-    </>
+      <div>
+        <div className="flex justify-between items-center mb-2">
+          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300">
+            ⌨️ Input (stdin)
+          </label>
+          <button
+            onClick={() => setShowInputHelper(true)}
+            className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded"
+          >
+            📚 See Example Code
+          </button>
+        </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+          💡 Type input here,then use input() (Python), Scanner (Java), or readline() (JavaScript) to read it
+        </p>
+        <textarea
+          className="w-full rounded border border-gray-700 bg-[#1e1e1e] px-3 py-2 font-mono text-xs text-[#d4d4d4] placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={stdin}
+          onChange={(event) => setStdin(event.target.value)}
+          placeholder="Type your input here (will be sent before code execution)..."
+          disabled={isEditorReadOnly}
+          rows="4"
+        />
+      </div>
+    </div>
   );
 
   return (
@@ -1235,6 +1223,11 @@ const CodeEditor = ({
         )}
       </div>
       <RenderOutput />
+      <InputHelperModal 
+        language={language} 
+        isOpen={showInputHelper} 
+        onClose={() => setShowInputHelper(false)}
+      />
     </div>
   );
 };

@@ -7,43 +7,244 @@
  * API Endpoint: https://emkc.org/api/v2/piston/execute
  * 
  * Supported Languages:
- * - python
- * - javascript
- * - java
+ * - bash
  * - c
+ * - cpp
+ * - csharp
+ * - dart
+ * - go
+ * - java
+ * - javascript
+ * - julia
+ * - kotlin
+ * - perl
+ * - python
+ * - ruby
+ * - rust
+ * - scala
+ * - sql
+ * - swift
+ * - typescript
+ * - verilog
  */
 
 // Language configurations for Piston API
 // Each language has a name and version that Piston supports
 export const LANGUAGE_CONFIGS = {
+  bash: {
+    name: 'bash',
+    version: 'latest',
+    fileName: 'main.sh',
+    compileTimeout: 10000,
+    runTimeout: 10000,
+  },
+  c: {
+    name: 'c',
+    version: 'latest',
+    fileName: 'main.c',
+    compileTimeout: 10000,
+    runTimeout: 10000,
+  },
+  cpp: {
+    name: 'cpp',
+    version: 'latest',
+    fileName: 'main.cpp',
+    compileTimeout: 10000,
+    runTimeout: 10000,
+  },
+  csharp: {
+    name: 'csharp',
+    version: 'latest',
+    fileName: 'main.cs',
+    compileTimeout: 10000,
+    runTimeout: 10000,
+  },
+  go: {
+    name: 'go',
+    version: 'latest',
+    fileName: 'main.go',
+    compileTimeout: 10000,
+    runTimeout: 10000,
+  },
+  java: {
+    name: 'java',
+    version: 'latest',
+    fileName: 'Main.java',
+    compileTimeout: 10000,
+    runTimeout: 10000,
+  },
   python: {
     name: 'python',
-    version: '3.10.0',
+    version: 'latest',
     fileName: 'main.py',
     compileTimeout: 10000,
     runTimeout: 10000,
   },
   javascript: {
     name: 'javascript',
-    version: '18.15.0',
+    version: 'latest',
     fileName: 'main.js',
     compileTimeout: 10000,
     runTimeout: 10000,
   },
-  java: {
-    name: 'java',
-    version: '15.0.2',
-    fileName: 'Main.java',
+  julia: {
+    name: 'julia',
+    version: 'latest',
+    fileName: 'main.jl',
     compileTimeout: 10000,
     runTimeout: 10000,
   },
-  c: {
-    name: 'c',
-    version: '10.2.0',
-    fileName: 'main.c',
+  kotlin: {
+    name: 'kotlin',
+    version: 'latest',
+    fileName: 'Main.kt',
     compileTimeout: 10000,
     runTimeout: 10000,
   },
+  perl: {
+    name: 'perl',
+    version: 'latest',
+    fileName: 'main.pl',
+    compileTimeout: 10000,
+    runTimeout: 10000,
+  },
+  ruby: {
+    name: 'ruby',
+    version: 'latest',
+    fileName: 'main.rb',
+    compileTimeout: 10000,
+    runTimeout: 10000,
+  },
+  rust: {
+    name: 'rust',
+    version: 'latest',
+    fileName: 'main.rs',
+    compileTimeout: 10000,
+    runTimeout: 10000,
+  },
+  scala: {
+    name: 'scala',
+    version: 'latest',
+    fileName: 'Main.scala',
+    compileTimeout: 10000,
+    runTimeout: 10000,
+  },
+  sql: {
+    name: 'sql',
+    version: 'latest',
+    fileName: 'main.sql',
+    compileTimeout: 10000,
+    runTimeout: 10000,
+  },
+  swift: {
+    name: 'swift',
+    version: 'latest',
+    fileName: 'main.swift',
+    compileTimeout: 10000,
+    runTimeout: 10000,
+  },
+  typescript: {
+    name: 'typescript',
+    version: 'latest',
+    fileName: 'main.ts',
+    compileTimeout: 10000,
+    runTimeout: 10000,
+  },
+};
+
+const LANGUAGE_ALIASES = {
+  htmlcssjs: 'javascript',
+};
+
+const PISTON_RUNTIME_URL = 'https://emkc.org/api/v2/piston/runtimes';
+let runtimesPromise = null;
+
+const fetchRuntimes = async () => {
+  if (!runtimesPromise) {
+    runtimesPromise = fetch(PISTON_RUNTIME_URL).then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+    });
+  }
+
+  return runtimesPromise;
+};
+
+const toVersionParts = (version) => {
+  if (typeof version !== 'string') return [];
+  return version.split(/[.-]/).map((part) => {
+    const num = Number(part);
+    return Number.isNaN(num) ? part : num;
+  });
+};
+
+const compareVersions = (a, b) => {
+  const partsA = toVersionParts(a);
+  const partsB = toVersionParts(b);
+  const maxLen = Math.max(partsA.length, partsB.length);
+
+  for (let i = 0; i < maxLen; i += 1) {
+    const partA = partsA[i];
+    const partB = partsB[i];
+
+    if (partA === undefined) return -1;
+    if (partB === undefined) return 1;
+
+    if (typeof partA === 'number' && typeof partB === 'number') {
+      if (partA !== partB) return partA - partB;
+    } else {
+      const stringA = String(partA);
+      const stringB = String(partB);
+      if (stringA !== stringB) return stringA.localeCompare(stringB);
+    }
+  }
+
+  return 0;
+};
+
+const pickLatestVersion = (runtimes, languageName) => {
+  if (!Array.isArray(runtimes)) return null;
+
+  const matches = runtimes.filter((runtime) => {
+    if (!runtime) return false;
+    if (runtime.language === languageName) return true;
+    if (Array.isArray(runtime.aliases)) {
+      return runtime.aliases.includes(languageName);
+    }
+    return false;
+  });
+
+  if (matches.length === 0) return null;
+
+  matches.sort((a, b) => compareVersions(b.version, a.version));
+  return matches[0].version || null;
+};
+
+const resolveLanguageConfig = async (language) => {
+  if (!language) return null;
+
+  const normalized = (LANGUAGE_ALIASES[language.toLowerCase()] || language).toLowerCase();
+  const config = LANGUAGE_CONFIGS[normalized];
+  if (!config) return null;
+
+  let resolvedVersion = config.version;
+  if (!resolvedVersion || resolvedVersion === 'latest') {
+    try {
+      const runtimes = await fetchRuntimes();
+      resolvedVersion = pickLatestVersion(runtimes, config.name) || resolvedVersion;
+    } catch {
+      resolvedVersion = resolvedVersion === 'latest' ? null : resolvedVersion;
+    }
+  }
+
+  if (!resolvedVersion || resolvedVersion === 'latest') return null;
+
+  return {
+    ...config,
+    version: resolvedVersion,
+  };
 };
 
 /**
@@ -56,12 +257,12 @@ export const LANGUAGE_CONFIGS = {
  */
 export const executeCode = async (language, code, stdin = '') => {
   // Get the language configuration
-  const langConfig = LANGUAGE_CONFIGS[language.toLowerCase()];
+  const langConfig = await resolveLanguageConfig(language);
   
   if (!langConfig) {
     return {
       success: false,
-      error: `Language '${language}' is not supported. Supported languages: ${Object.keys(LANGUAGE_CONFIGS).join(', ')}`,
+      error: `Language '${language}' is not supported by the Piston API. Supported languages: ${Object.keys(LANGUAGE_CONFIGS).join(', ')}`,
       stdout: '',
       stderr: '',
       output: '',
@@ -85,10 +286,15 @@ export const executeCode = async (language, code, stdin = '') => {
     ],
   };
 
-  // Add stdin if provided
-  if (stdin && stdin.trim()) {
+  // Add stdin if provided (even if whitespace-only)
+  if (stdin !== undefined && stdin !== null && stdin !== '') {
     requestBody.stdin = stdin;
+    console.log("📥 stdin added to request:", JSON.stringify(stdin));
+  } else {
+    console.warn("⚠️ stdin is empty or not provided");
   }
+
+  console.log("📝 Piston API Request Body:", JSON.stringify(requestBody, null, 2));
 
   try {
     // Make the API call
@@ -105,6 +311,8 @@ export const executeCode = async (language, code, stdin = '') => {
     }
 
     const data = await response.json();
+
+    console.log("📤 Piston API Response:", JSON.stringify(data, null, 2));
 
     // Extract output information from the response
     const stdout = data.run?.stdout || '';

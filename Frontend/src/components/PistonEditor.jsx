@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import MonacoEditor from "@monaco-editor/react";
 import OutputConsole from "./OutputConsole";
 import { executeCode, LANGUAGE_CONFIGS } from "../utils/pistonApi";
 
@@ -10,9 +11,29 @@ const STARTER_CODE = {
 };
 
 const STORAGE_KEY = "__pistonRunnerState__";
+const MONACO_LANGUAGE_MAP = {
+  bash: "shell",
+  c: "c",
+  cpp: "cpp",
+  csharp: "csharp",
+  go: "go",
+  java: "java",
+  javascript: "javascript",
+  julia: "julia",
+  kotlin: "kotlin",
+  perl: "perl",
+  python: "python",
+  ruby: "ruby",
+  rust: "rust",
+  scala: "scala",
+  sql: "sql",
+  swift: "swift",
+  typescript: "typescript",
+};
 
 const PistonEditor = ({ isDarkMode = true }) => {
   const languages = useMemo(() => Object.keys(LANGUAGE_CONFIGS), []);
+  const editorRef = useRef(null);
   const [language, setLanguage] = useState("python");
   const [code, setCode] = useState(STARTER_CODE.python);
   const [stdin, setStdin] = useState("");
@@ -138,6 +159,11 @@ const PistonEditor = ({ isDarkMode = true }) => {
     setIsRunning(false);
   };
 
+  const monacoLanguage = useMemo(
+    () => MONACO_LANGUAGE_MAP[language] || "plaintext",
+    [language]
+  );
+
   return (
     <div className="max-w-5xl mx-auto p-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
@@ -183,11 +209,26 @@ const PistonEditor = ({ isDarkMode = true }) => {
 
         <div>
           <label className="block text-sm font-medium mb-1">Code</label>
-          <textarea
-            className="w-full min-h-[220px] p-3 font-mono text-sm rounded border dark:bg-gray-900 dark:border-gray-700"
-            value={code}
-            onChange={(event) => setCode(event.target.value)}
-          />
+          <div className="rounded border dark:border-gray-700 overflow-hidden">
+            <MonacoEditor
+              language={monacoLanguage}
+              value={code}
+              onChange={(newValue) => setCode(newValue || "")}
+              onMount={(editor) => {
+                editorRef.current = editor;
+                editor.focus();
+              }}
+              height="260px"
+              theme={isDarkMode ? "vs-dark" : "vs-light"}
+              options={{
+                minimap: { enabled: false },
+                fontFamily: "Source Code Pro",
+                fontWeight: "bold",
+                fontSize: 14,
+                scrollBeyondLastLine: false,
+              }}
+            />
+          </div>
         </div>
 
         <div>
@@ -210,7 +251,7 @@ const PistonEditor = ({ isDarkMode = true }) => {
             {isRunning ? "Running..." : "Run"}
           </button>
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            Supports python, java, c, javascript
+            Supports {languages.join(", ")}
           </span>
         </div>
       </div>

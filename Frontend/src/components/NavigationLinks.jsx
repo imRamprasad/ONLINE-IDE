@@ -1,12 +1,11 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import SharedLinks from "./SharedLinks";
-import PistonEditor from "./PistonEditor";
 
 const navLinks = [
   {
-    to: "/htmlcssjs",
-    text: "HTML, CSS, JS",
+    to: "/bash",
+    text: "Bash",
     classes: "bg-blue-500 motion-delay-[400ms]",
   },
   {
@@ -50,19 +49,9 @@ const navLinks = [
     classes: "bg-green-700 motion-delay-[800ms]",
   },
   {
-    to: "/verilog",
-    text: "Verilog",
-    classes: "bg-gray-600 motion-delay-[850ms]",
-  },
-  {
     to: "/sql",
     text: "SQL",
     classes: "bg-indigo-500 motion-delay-[900ms]",
-  },
-  {
-    to: "/mongodb",
-    text: "MongoDB",
-    classes: "bg-teal-600 motion-delay-[950ms]",
   },
   {
     to: "/swift",
@@ -78,11 +67,6 @@ const navLinks = [
     to: "/typescript",
     text: "Typescript",
     classes: "bg-blue-600 motion-delay-[1100ms]",
-  },
-  {
-    to: "/dart",
-    text: "Dart",
-    classes: "bg-cyan-500 motion-delay-[1150ms]",
   },
   {
     to: "/kotlin",
@@ -128,11 +112,6 @@ const NavigationLinks = ({ isDarkMode = true }) => {
               {text}
             </Link>
           ))}
-        </div>
-      </div>
-      <div className="max-w-6xl mx-auto w-full px-4 pb-6">
-        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/60 shadow-sm">
-          <PistonEditor isDarkMode={isDarkMode} />
         </div>
       </div>
       <SharedLinks />

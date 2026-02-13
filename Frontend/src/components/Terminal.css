@@ -1,0 +1,30 @@
+.terminal-root {
+  width: 100%;
+  height: 280px;
+  background: #1e1e1e;
+  border: 1px solid #4b5563;
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.terminal-root .xterm {
+  flex: 1;
+  overflow: hidden;
+}
+
+.terminal-root .xterm-screen {
+  display: flex;
+  flex-direction: column;
+}
+
+.terminal-root .xterm-viewport {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.terminal-root .xterm-char-measure-element {
+  display: none;
+}
