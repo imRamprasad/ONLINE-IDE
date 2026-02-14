@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaBarsStaggered } from "react-icons/fa6";
+import { IoArrowBack } from "react-icons/io5";
 import { SiIfixit } from "react-icons/si";
 import { RxMoon, RxSun } from "react-icons/rx";
 import Swal from "sweetalert2/dist/sweetalert2.js";
@@ -12,6 +13,8 @@ import {
 } from "../utils/constants";
 
 const Header = ({ isDarkMode, toggleTheme }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
   // Initialize state from localStorage
   const [username, setUsername] = useState(() => {
     const storedUsername = localStorage.getItem(LOCAL_STORAGE_USERNAME_KEY);
@@ -57,15 +60,42 @@ const Header = ({ isDarkMode, toggleTheme }) => {
     });
   };
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+    navigate("/");
+  };
+
   const formatUsername = (name) =>
     name.length > 15 ? `${name.slice(0, 5)}...${name.slice(-5)}` : name;
 
   return (
     <>
       <header className="bg-gray-800 text-white p-4 relative z-10">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold hover:text-gray-300">
-            CUTM IDE
+        {location.pathname !== "/" && (
+          <button
+            type="button"
+            onClick={handleBack}
+            className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-gray-700"
+            aria-label="Go back"
+            title="Back"
+          >
+            <IoArrowBack />
+          </button>
+        )}
+        <div className="max-w-6xl mx-auto flex justify-end items-center relative">
+          <Link
+            to="/"
+            className="text-2xl font-bold hover:text-gray-300 absolute left-1/2 -translate-x-1/2 flex items-center gap-2"
+          >
+            <img
+              src="/Cutm_Logo.png"
+              alt="CUTM SkillBridge"
+              className="h-8 w-8 rounded-full"
+            />
+            <span>CUTM IDE</span>
           </Link>
 
           {/* Desktop */}
