@@ -6,11 +6,21 @@ import {
 
 const blocker = `
 (() => {
-  const blockedHosts = [
-    new URL("${BACKEND_API_URL}").hostname,
-    new URL("${GENAI_API_URL}").hostname,
-    new URL("${TEMP_SHARE_API_URL}").hostname,
+  const rawUrls = [
+    "${BACKEND_API_URL}",
+    "${GENAI_API_URL}",
+    "${TEMP_SHARE_API_URL}",
   ];
+
+  const blockedHosts = rawUrls
+    .map((value) => {
+      try {
+        return new URL(value).hostname;
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean);
 
   const isBlocked = (url) => {
     try {

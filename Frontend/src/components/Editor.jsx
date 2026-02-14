@@ -113,9 +113,11 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
   const [overlayText, setOverlayText] = useState(false);
   const [previewDoc, setPreviewDoc] = useState("");
   const [previewScriptUrl, setPreviewScriptUrl] = useState("");
+  const [previewStyleUrl, setPreviewStyleUrl] = useState("");
 
   const editorRefs = useRef({});
   const scriptUrlRef = useRef(null);
+  const styleUrlRef = useRef(null);
 
   const fontSizeMap = {
     pc: 16,
@@ -192,14 +194,17 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
     editorRefs.current[id] = editor;
   };
 
-  const buildPreviewDocument = useCallback((html, css, javascript, scriptUrl) => {
+  const buildPreviewDocument = useCallback((html, css, javascript, scriptUrl, styleUrl) => {
     const safeHtml = html?.trim() || "";
     const safeCss = css?.trim() || "";
     const safeJs = javascript?.trim() || "";
     const scriptTagRegex =
       /<script([^>]*?)src=["'](?:\.\/)?script\.js["']([^>]*)><\/script>/gi;
+    const styleLinkRegex =
+      /<link([^>]*?)href=["'](?:\.\/)?style\.css["']([^>]*)>/gi;
 
     let htmlWithScripts = safeHtml;
+    let useStyleLink = false;
 
     if (scriptUrl) {
       if (scriptTagRegex.test(htmlWithScripts)) {
@@ -214,13 +219,25 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
       htmlWithScripts = htmlWithScripts.replace(scriptTagRegex, "");
     }
 
+    if (styleUrl) {
+      if (styleLinkRegex.test(htmlWithScripts)) {
+        htmlWithScripts = htmlWithScripts.replace(
+          styleLinkRegex,
+          `<link$1href="${styleUrl}"$2>`
+        );
+        useStyleLink = true;
+      }
+    } else if (styleLinkRegex.test(htmlWithScripts)) {
+      htmlWithScripts = htmlWithScripts.replace(styleLinkRegex, "");
+    }
+
     return `
       <!DOCTYPE html>
       <html style="scrollbar-width: thin;">
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <title>Preview</title>
-          <style>${safeCss}</style>
+          ${useStyleLink ? "" : `<style>${safeCss}</style>`}
           <script>${blocker || ""}</script>
         </head>
         <body>
@@ -265,6 +282,28 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
     return nextUrl;
   }, []);
 
+  const createStyleUrl = useCallback((css) => {
+    const content = css?.trim() || "";
+
+    if (!content) {
+      if (styleUrlRef.current) {
+        URL.revokeObjectURL(styleUrlRef.current);
+        styleUrlRef.current = null;
+      }
+      return "";
+    }
+
+    const blob = new Blob([content], { type: "text/css" });
+    const nextUrl = URL.createObjectURL(blob);
+
+    if (styleUrlRef.current) {
+      URL.revokeObjectURL(styleUrlRef.current);
+    }
+
+    styleUrlRef.current = nextUrl;
+    return nextUrl;
+  }, []);
+
   const updatePreview = useCallback(
     debounce(() => {
       if (!isPreviewEnabled) return;
@@ -272,11 +311,13 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
       try {
         const { html, css, javascript } = code;
         const scriptUrl = createScriptUrl(javascript);
+        const styleUrl = createStyleUrl(css);
         setPreviewScriptUrl(scriptUrl);
-        setPreviewDoc(buildPreviewDocument(html, css, javascript, scriptUrl));
+        setPreviewStyleUrl(styleUrl);
+        setPreviewDoc(buildPreviewDocument(html, css, javascript, scriptUrl, styleUrl));
       } catch {}
     }, 300),
-    [code, isPreviewEnabled, buildPreviewDocument, createScriptUrl]
+    [code, isPreviewEnabled, buildPreviewDocument, createScriptUrl, createStyleUrl]
   );
 
   const openPreviewFullScreen = () => {
@@ -284,8 +325,11 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
       const { html, css, javascript } = code;
       const newWindow = window.open("", "_blank");
       const jsContent = javascript?.trim() || "";
+      const cssContent = css?.trim() || "";
       let tempUrl = "";
+      let tempStyleUrl = "";
       let scriptUrl = previewScriptUrl;
+      let styleUrl = previewStyleUrl;
 
       if (!scriptUrl && jsContent) {
         tempUrl = URL.createObjectURL(
@@ -294,13 +338,32 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
         scriptUrl = tempUrl;
       }
 
-      const previewHtml = buildPreviewDocument(html, css, javascript, scriptUrl);
+      if (!styleUrl && cssContent) {
+        tempStyleUrl = URL.createObjectURL(
+          new Blob([cssContent], { type: "text/css" })
+        );
+        styleUrl = tempStyleUrl;
+      }
+
+      const previewHtml = buildPreviewDocument(
+        html,
+        css,
+        javascript,
+        scriptUrl,
+        styleUrl
+      );
       newWindow.document.write(previewHtml);
       newWindow.document.close();
 
       if (tempUrl) {
         newWindow.addEventListener("load", () => {
           URL.revokeObjectURL(tempUrl);
+        });
+      }
+
+      if (tempStyleUrl) {
+        newWindow.addEventListener("load", () => {
+          URL.revokeObjectURL(tempStyleUrl);
         });
       }
     } catch {}
@@ -335,6 +398,11 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
         URL.revokeObjectURL(scriptUrlRef.current);
         scriptUrlRef.current = null;
       }
+
+      if (styleUrlRef.current) {
+        URL.revokeObjectURL(styleUrlRef.current);
+        styleUrlRef.current = null;
+      }
     };
   }, [updatePreview]);
 
@@ -346,7 +414,8 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
     setCode({ html: "", css: "", javascript: "" });
     sessionStorage.removeItem(storageKey);
     setPreviewScriptUrl("");
-    setPreviewDoc(buildPreviewDocument("", "", "", ""));
+    setPreviewStyleUrl("");
+    setPreviewDoc(buildPreviewDocument("", "", "", "", ""));
   };
 
   const downloadFile = () => {

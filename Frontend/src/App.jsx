@@ -5,17 +5,25 @@ import MainBody from "./components/MainBody";
 import { RECAPTCHA_SITE_KEY } from "./utils/constants";
 
 const App = () => {
+  const content = (
+    <ThemeProvider>
+      <Router>
+        <ThemeContext.Consumer>
+          {({ isDarkMode, toggleTheme }) => (
+            <MainBody isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+          )}
+        </ThemeContext.Consumer>
+      </Router>
+    </ThemeProvider>
+  );
+
+  if (!RECAPTCHA_SITE_KEY) {
+    return content;
+  }
+
   return (
     <GoogleReCaptchaProvider reCaptchaKey={RECAPTCHA_SITE_KEY}>
-      <ThemeProvider>
-        <Router>
-          <ThemeContext.Consumer>
-            {({ isDarkMode, toggleTheme }) => (
-              <MainBody isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
-            )}
-          </ThemeContext.Consumer>
-        </Router>
-      </ThemeProvider>
+      {content}
     </GoogleReCaptchaProvider>
   );
 };
