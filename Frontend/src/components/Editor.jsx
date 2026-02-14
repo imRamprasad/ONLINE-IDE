@@ -85,8 +85,8 @@ const EditorSection = ({
   );
 };
 
-const Editor = ({ isDarkMode, value, title, shareIdData }) => {
-  const storageKey = `__${shareIdData || "htmlcssjs"}Code__`;
+const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => {
+  const storageKey = `__${shareIdData || storageNamespace || "htmlcssjs"}Code__`;
 
   const [code, setCode] = useState(() => {
     const savedCode = sessionStorage.getItem(storageKey);
@@ -111,9 +111,11 @@ const Editor = ({ isDarkMode, value, title, shareIdData }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const [overlayText, setOverlayText] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState("");
+  const [previewScriptUrl, setPreviewScriptUrl] = useState("");
 
-  const iframeRef = useRef(null);
   const editorRefs = useRef({});
+  const scriptUrlRef = useRef(null);
 
   const fontSizeMap = {
     pc: 16,
@@ -190,75 +192,117 @@ const Editor = ({ isDarkMode, value, title, shareIdData }) => {
     editorRefs.current[id] = editor;
   };
 
+  const buildPreviewDocument = useCallback((html, css, javascript, scriptUrl) => {
+    const safeHtml = html?.trim() || "";
+    const safeCss = css?.trim() || "";
+    const safeJs = javascript?.trim() || "";
+    const scriptTagRegex =
+      /<script([^>]*?)src=["'](?:\.\/)?script\.js["']([^>]*)><\/script>/gi;
+
+    let htmlWithScripts = safeHtml;
+
+    if (scriptUrl) {
+      if (scriptTagRegex.test(htmlWithScripts)) {
+        htmlWithScripts = htmlWithScripts.replace(
+          scriptTagRegex,
+          `<script$1src="${scriptUrl}"$2></script>`
+        );
+      } else {
+        htmlWithScripts = `${htmlWithScripts}\n<script src="${scriptUrl}"></script>`;
+      }
+    } else if (scriptTagRegex.test(htmlWithScripts)) {
+      htmlWithScripts = htmlWithScripts.replace(scriptTagRegex, "");
+    }
+
+    return `
+      <!DOCTYPE html>
+      <html style="scrollbar-width: thin;">
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>Preview</title>
+          <style>${safeCss}</style>
+          <script>${blocker || ""}</script>
+        </head>
+        <body>
+          ${htmlWithScripts}
+          ${
+            scriptUrl
+              ? ""
+              : `<script>
+            (function() {
+              try {
+                ${safeJs}
+              } catch (error) {
+                console.error("Error executing JS:", error);
+              }
+            })();
+          </script>`
+          }
+        </body>
+      </html>
+    `;
+  }, []);
+
+  const createScriptUrl = useCallback((javascript) => {
+    const content = javascript?.trim() || "";
+
+    if (!content) {
+      if (scriptUrlRef.current) {
+        URL.revokeObjectURL(scriptUrlRef.current);
+        scriptUrlRef.current = null;
+      }
+      return "";
+    }
+
+    const blob = new Blob([content], { type: "text/javascript" });
+    const nextUrl = URL.createObjectURL(blob);
+
+    if (scriptUrlRef.current) {
+      URL.revokeObjectURL(scriptUrlRef.current);
+    }
+
+    scriptUrlRef.current = nextUrl;
+    return nextUrl;
+  }, []);
+
   const updatePreview = useCallback(
     debounce(() => {
       if (!isPreviewEnabled) return;
 
       try {
         const { html, css, javascript } = code;
-
-        if (iframeRef.current) {
-          const iframeDocument =
-            iframeRef.current.contentDocument ||
-            iframeRef.current.contentWindow.document;
-
-          iframeDocument.open();
-          iframeDocument.write(`
-        <!DOCTYPE html>
-        <html style="scrollbar-width: thin;">
-          <head>
-            <style>${css.trim() || ""}</style>
-            <script>${blocker || ""}</script>
-          </head>
-          <body>
-            ${html.trim() || ""}
-            <script>
-              (function() {
-                try {
-                  ${javascript.trim() || ""}
-                } catch (error) {
-                  console.error("Error executing JS:", error);
-                }
-              })();
-            </script>
-          </body>
-        </html>
-      `);
-          iframeDocument.close();
-        }
+        const scriptUrl = createScriptUrl(javascript);
+        setPreviewScriptUrl(scriptUrl);
+        setPreviewDoc(buildPreviewDocument(html, css, javascript, scriptUrl));
       } catch {}
-    }, 500),
-    [code, isPreviewEnabled]
+    }, 300),
+    [code, isPreviewEnabled, buildPreviewDocument, createScriptUrl]
   );
 
   const openPreviewFullScreen = () => {
     try {
       const { html, css, javascript } = code;
       const newWindow = window.open("", "_blank");
-      newWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Preview</title>
-        <style>${css.trim() || ""}</style>
-        <script>${blocker || ""}</script>
-      </head>
-      <body>
-        ${html.trim() || ""}
-        <script>
-          (function() {
-            try {
-              ${javascript.trim() || ""}
-            } catch (error) {
-              console.error("Error executing JS:", error);
-            }
-          })();
-        </script>
-      </body>
-      </html>
-    `);
+      const jsContent = javascript?.trim() || "";
+      let tempUrl = "";
+      let scriptUrl = previewScriptUrl;
+
+      if (!scriptUrl && jsContent) {
+        tempUrl = URL.createObjectURL(
+          new Blob([jsContent], { type: "text/javascript" })
+        );
+        scriptUrl = tempUrl;
+      }
+
+      const previewHtml = buildPreviewDocument(html, css, javascript, scriptUrl);
+      newWindow.document.write(previewHtml);
       newWindow.document.close();
+
+      if (tempUrl) {
+        newWindow.addEventListener("load", () => {
+          URL.revokeObjectURL(tempUrl);
+        });
+      }
     } catch {}
   };
 
@@ -281,6 +325,19 @@ const Editor = ({ isDarkMode, value, title, shareIdData }) => {
     updatePreview();
   }, [code, updatePreview]);
 
+  useEffect(() => {
+    return () => {
+      if (typeof updatePreview.cancel === "function") {
+        updatePreview.cancel();
+      }
+
+      if (scriptUrlRef.current) {
+        URL.revokeObjectURL(scriptUrlRef.current);
+        scriptUrlRef.current = null;
+      }
+    };
+  }, [updatePreview]);
+
   const handleEditorChange = (language, value) => {
     setCode((prevCode) => ({ ...prevCode, [language]: value }));
   };
@@ -288,41 +345,8 @@ const Editor = ({ isDarkMode, value, title, shareIdData }) => {
   const clearAll = () => {
     setCode({ html: "", css: "", javascript: "" });
     sessionStorage.removeItem(storageKey);
-
-    const { html, css, javascript } = code;
-
-    if (iframeRef.current) {
-      const iframeDocument =
-        iframeRef.current.contentDocument ||
-        iframeRef.current.contentWindow.document;
-
-      setIsPreviewEnabled(false);
-
-      iframeDocument.open();
-      iframeDocument.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <style>${css || ""}</style>
-          </head>
-          <body>
-            ${html || ""}
-            <script>
-              (function() {
-                try {
-                  ${javascript || ""}
-                } catch (error) {
-                  console.error("Error executing JS:", error);
-                }
-              })();
-            </script>
-          </body>
-        </html>
-      `);
-      iframeDocument.close();
-
-      setIsPreviewEnabled(true);
-    }
+    setPreviewScriptUrl("");
+    setPreviewDoc(buildPreviewDocument("", "", "", ""));
   };
 
   const downloadFile = () => {
@@ -1324,8 +1348,8 @@ const Editor = ({ isDarkMode, value, title, shareIdData }) => {
         </button>
 
         <iframe
-          ref={iframeRef}
           title="Preview"
+          srcDoc={previewDoc}
           className="w-full mt-4 h-96 bg-white text-black border border-gray-300 dark:border-gray-800"
           referrerPolicy="no-referrer"
         />

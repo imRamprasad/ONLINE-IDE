@@ -1,27 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <title>Editor Test</title>
-
-    <!-- Link CSS -->
-    <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <title>Code Tester</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-    <div class="card">
-        <h1>Editor Test 🚀</h1>
-        <p>If you see styles and JS works, your editor is OK.</p>
+<div class="editor">
+    <h3>HTML</h3>
+    <textarea id="htmlCode"><h1>Hello World</h1></textarea>
 
-        <button id="testBtn">Run JS</button>
+    <h3>CSS</h3>
+    <textarea id="cssCode">h1 { color: blue; }</textarea>
 
-        <div id="output"></div>
-    </div>
+    <h3>JavaScript</h3>
+    <textarea id="jsCode">console.log("Hello from JS");</textarea>
 
-    <!-- Link JS -->
-    <script src="script.js"></script>
+    <button onclick="runCode()">Run Code</button>
+</div>
+
+<iframe id="output"></iframe>
+
+<script src="script.js"></script>
 </body>
-
 </html>

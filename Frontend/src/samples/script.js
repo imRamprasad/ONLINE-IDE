@@ -1,15 +1,23 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Select the h1 and p elements
-    const heading = document.querySelector('h1');
-    const paragraph = document.querySelector('p');
-    
-    // Add click event listener to the h1
-    heading.addEventListener('click', function() {
-        heading.textContent = 'Heading Clicked!';
-    });
-    
-    // Add click event listener to the p
-    paragraph.addEventListener('click', function() {
-        paragraph.textContent = 'Paragraph Clicked!';
-    });
-});
+function runCode() {
+    const html = document.getElementById("htmlCode").value;
+    const css = document.getElementById("cssCode").value;
+    const js = document.getElementById("jsCode").value;
+
+    const output = document.getElementById("output").contentWindow.document;
+
+    output.open();
+    output.write(`
+        <html>
+        <head>
+        <style>${css}</style>
+        </head>
+        <body>
+        ${html}
+        <script>
+        ${js}
+        <\/script>
+        </body>
+        </html>
+    `);
+    output.close();
+}

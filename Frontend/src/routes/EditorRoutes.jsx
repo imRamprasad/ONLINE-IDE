@@ -184,6 +184,7 @@ const EditorRoutes = ({ isDarkMode }) => (
           <Editor
             isDarkMode={isDarkMode}
             title="frontend"
+            storageNamespace="frontend"
             value={{
               html: sampleHtml,
               css: sampleCss,
