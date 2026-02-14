@@ -4,6 +4,11 @@ import SharedLinks from "./SharedLinks";
 
 const navLinks = [
   {
+    to: "/frontend",
+    text: "HTML/CSS/JS",
+    classes: "bg-emerald-600 motion-delay-[350ms]",
+  },
+  {
     to: "/bash",
     text: "Bash",
     classes: "bg-blue-500 motion-delay-[400ms]",

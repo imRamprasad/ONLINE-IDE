@@ -30,6 +30,7 @@ import NavigationLinks from "../components/NavigationLinks";
 import CodeEditor from "../components/CodeEditor";
 import ShareEditor from "../components/ShareEditor";
 import DebugInput from "../components/DebugInput";
+import Editor from "../components/Editor";
 import {
   LOCAL_STORAGE_TOKEN_KEY,
   LOCAL_STORAGE_USERNAME_KEY,
@@ -51,6 +52,9 @@ import samplePerl from "../samples/perl.pl?raw";
 import sampleScala from "../samples/scala.scala?raw";
 import sampleJulia from "../samples/julia.jl?raw";
 import sampleBash from "../samples/bash.sh?raw";
+import sampleHtml from "../samples/index.html?raw";
+import sampleCss from "../samples/style.css?raw";
+import sampleScript from "../samples/script.js?raw";
 
 const isAuthenticated = () => !!localStorage.getItem(LOCAL_STORAGE_TOKEN_KEY);
 
@@ -189,6 +193,21 @@ const EditorRoutes = ({ isDarkMode }) => (
       />
 
       <Route path="/" element={<NavigationLinks isDarkMode={isDarkMode} />} />
+
+      <Route
+        path="/frontend"
+        element={
+          <Editor
+            isDarkMode={isDarkMode}
+            title="frontend"
+            value={{
+              html: sampleHtml,
+              css: sampleCss,
+              javascript: sampleScript,
+            }}
+          />
+        }
+      />
 
       <Route
         path="/:shareId"
