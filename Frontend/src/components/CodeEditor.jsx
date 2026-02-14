@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import MonacoEditor from "@monaco-editor/react";
 import SimpleTerminal from "./SimpleTerminal";
 import InputHelperModal from "./InputHelperModal";
 import ShareLinkModal from "../utils/ShareLinkModal.js";
 import { executeCode } from "../utils/pistonApi";
+import { apiFetch } from "../utils/apifetch";
 import {
   SESSION_STORAGE_SHARELINKS_KEY,
   LOCAL_STORAGE_TOKEN_KEY,
@@ -145,7 +146,7 @@ const CodeEditor = ({
     window.addEventListener("resize", handleResize);
 
     return () => window.removeEventListener("resize", handleResize);
-  }, [language]);
+  }, [language, codeStorageKey, defaultCode, outputStorageKey, stdinStorageKey]);
 
   useEffect(() => {
     if (code !== sessionStorage.getItem(codeStorageKey) || code === "") {
@@ -159,7 +160,7 @@ const CodeEditor = ({
     if (stdin !== sessionStorage.getItem(stdinStorageKey) || stdin === "") {
       sessionStorage.setItem(stdinStorageKey, stdin);
     }
-  }, [code, output, stdin, language]);
+  }, [code, output, stdin, language, codeStorageKey, outputStorageKey, stdinStorageKey]);
 
   useEffect(() => {
     if (!output || output === "Run your code to see output here...") return;
@@ -170,7 +171,7 @@ const CodeEditor = ({
     }
   }, [output]);
 
-  const handleEditorDidMount = (editor, monaco) => {
+  const handleEditorDidMount = (editor) => {
     editorRef.current = editor;
   };
 
@@ -229,6 +230,7 @@ const CodeEditor = ({
         await getRunCodeCount(language);
       }
     } catch (error) {
+      console.error(error);
       setOutput("Failed!! Try again.");
     } finally {
       setIsEditorReadOnly(false);
@@ -267,6 +269,7 @@ const CodeEditor = ({
 
       setCpyBtnState("Copied!");
     } catch (err) {
+      console.error(err);
       Swal.fire({
         title: "Failed to copy",
         text: `Could not copy the ${language} code to clipboard.`,
@@ -499,6 +502,7 @@ const CodeEditor = ({
         await getGenerateCodeCount();
       }
     } catch (error) {
+      console.error(error);
       Swal.fire("Error", "Failed to generate code.", "error");
     } finally {
       setLoadingActionGen(null);
@@ -627,6 +631,7 @@ const CodeEditor = ({
         await getRefactorCodeCount();
       }
     } catch (error) {
+      console.error(error);
       Swal.fire("Error", "Failed to refactor code.", "error");
     } finally {
       setLoadingActionRefactor(null);
@@ -782,6 +787,7 @@ const CodeEditor = ({
                   timer: 2000,
                 });
               } catch (err) {
+                console.error(err);
                 Swal.fire({
                   title: "Failed to copy",
                   text: "Could not copy the URL to clipboard.",
@@ -879,39 +885,35 @@ const CodeEditor = ({
   };
 
   const saveSharedLinkCount = async (shareId, title, expiryTime) => {
-    try {
-      const token = localStorage.getItem(LOCAL_STORAGE_TOKEN_KEY);
+    const token = localStorage.getItem(LOCAL_STORAGE_TOKEN_KEY);
 
-      if (!token) {
-        return;
+    if (!token) {
+      return;
+    }
+
+    const countResponse = await apiFetch(
+      `${BACKEND_API_URL}/api/sharedLink/count`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          shareId,
+          title,
+          expiryTime,
+        }),
       }
+    );
 
-      const countResponse = await apiFetch(
-        `${BACKEND_API_URL}/api/sharedLink/count`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            shareId,
-            title,
-            expiryTime,
-          }),
-        }
+    if (!countResponse.ok) {
+      const errorResponse = await countResponse.json();
+      throw new Error(
+        `Failed to save shared link count: ${
+          errorResponse.msg || countResponse.statusText
+        }`
       );
-
-      if (!countResponse.ok) {
-        const errorResponse = await countResponse.json();
-        throw new Error(
-          `Failed to save shared link count: ${
-            errorResponse.msg || countResponse.statusText
-          }`
-        );
-      }
-    } catch (err) {
-      throw err;
     }
   };
 
@@ -1017,7 +1019,7 @@ const CodeEditor = ({
     URL.revokeObjectURL(url);
   };
 
-  const handleCtrlS = (event) => {
+  const handleCtrlS = useCallback((event) => {
     if (
       (event.ctrlKey || event.metaKey) &&
       event.key === "s" &&
@@ -1026,14 +1028,14 @@ const CodeEditor = ({
       event.preventDefault();
       downloadFile(code, "file", language);
     }
-  };
+  }, [code, language]);
 
   useEffect(() => {
     document.addEventListener("keydown", handleCtrlS);
     return () => {
       document.removeEventListener("keydown", handleCtrlS);
     };
-  }, [code, language]);
+  }, [handleCtrlS]);
 
   const buttonsConfig = [
     {

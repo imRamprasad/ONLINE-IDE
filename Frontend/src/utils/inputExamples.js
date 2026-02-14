@@ -167,7 +167,7 @@ if let name = readLine() {
 class Program {
   static void Main() {
     string name = Console.ReadLine();
-    Console.WriteLine(\$"Hello, {name}!");
+    Console.WriteLine($"Hello, {name}!");
   }
 }`,
     preview: "Input: Mike\nOutput: Hello, Mike!"

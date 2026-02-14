@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import INPUT_EXAMPLES from "../utils/inputExamples";
 
 const InputHelperModal = ({ language, isOpen, onClose }) => {
