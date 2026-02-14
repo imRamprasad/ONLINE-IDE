@@ -122,3 +122,6 @@ egg-info/
 
 # Vercel
 vercel.json
+
+#images
+*.png

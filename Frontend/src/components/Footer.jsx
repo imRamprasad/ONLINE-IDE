@@ -6,7 +6,7 @@ const Footer = () => {
   return (
     <footer className="text-center p-4 bg-gray-800 text-white">
       <p className="text-sm md:text-base lg:text-lg flex items-center justify-center">
-        <span>&copy; {currentYear} Online IDE</span>
+        <span>&copy; {currentYear} CUTM IDE</span>
       </p>
     </footer>
   );
