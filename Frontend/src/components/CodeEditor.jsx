@@ -108,7 +108,7 @@ const CodeEditor = ({
       savedOutput &&
       savedOutput
         .replace(
-          /^```(text|json|c|cpp|csharp|dart|go|java|javascript|julia|kotlin|mongodb|perl|python|ruby|rust|scala|sql|swift|typescript|verilog)[\r\n]*/m,
+          /^```(text|json|c|cpp|csharp|dart|go|java|javascript|julia|kotlin|mongodb|perl|python|ruby|rust|sql|typescript|verilog)[\r\n]*/m,
           ""
         )
         .replace(/^```[\r\n]*/m, "")
@@ -970,10 +970,6 @@ const CodeEditor = ({
         mimeType = "application/javascript";
         fileExtension = "js";
         break;
-      case "swift":
-        mimeType = "application/x-swift";
-        fileExtension = "swift";
-        break;
       case "ruby":
         mimeType = "text/x-ruby";
         fileExtension = "rb";
@@ -993,10 +989,6 @@ const CodeEditor = ({
       case "perl":
         mimeType = "application/x-perl";
         fileExtension = "pl";
-        break;
-      case "scala":
-        mimeType = "application/scala";
-        fileExtension = "scala";
         break;
       case "julia":
         mimeType = "application/x-julia";

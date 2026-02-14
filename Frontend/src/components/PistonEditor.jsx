@@ -25,9 +25,7 @@ const MONACO_LANGUAGE_MAP = {
   python: "python",
   ruby: "ruby",
   rust: "rust",
-  scala: "scala",
   sql: "sql",
-  swift: "swift",
   typescript: "typescript",
 };
 

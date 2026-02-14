@@ -4,10 +4,8 @@ import { IoLogoPython } from "react-icons/io5";
 import {
   SiJavascript,
   SiRust,
-  SiSwift,
   SiRuby,
   SiPerl,
-  SiScala,
   SiJulia,
   SiGnubash,
 } from "react-icons/si";
@@ -44,12 +42,10 @@ import sampleCsharp from "../samples/csharp.cs?raw";
 import sampleRust from "../samples/rust.rs?raw";
 import sampleGo from "../samples/go.go?raw";
 import sampleSQL from "../samples/sql.sql?raw";
-import sampleSwift from "../samples/swift.swift?raw";
 import sampleRuby from "../samples/ruby.rb?raw";
 import sampleTypeScript from "../samples/typescript.ts?raw";
 import sampleKotlin from "../samples/kotlin.kt?raw";
 import samplePerl from "../samples/perl.pl?raw";
-import sampleScala from "../samples/scala.scala?raw";
 import sampleJulia from "../samples/julia.jl?raw";
 import sampleBash from "../samples/bash.sh?raw";
 import sampleHtml from "../samples/index.html?raw";
@@ -132,12 +128,6 @@ const languages = [
     sampleCode: sampleSQL,
   },
   {
-    path: "/swift",
-    language: "swift",
-    icon: SiSwift,
-    sampleCode: sampleSwift,
-  },
-  {
     path: "/ruby",
     language: "ruby",
     icon: SiRuby,
@@ -160,12 +150,6 @@ const languages = [
     language: "perl",
     icon: SiPerl,
     sampleCode: samplePerl,
-  },
-  {
-    path: "/scala",
-    language: "scala",
-    icon: SiScala,
-    sampleCode: sampleScala,
   },
   {
     path: "/julia",

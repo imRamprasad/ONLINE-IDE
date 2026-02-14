@@ -59,11 +59,6 @@ const navLinks = [
     classes: "bg-indigo-500 motion-delay-[900ms]",
   },
   {
-    to: "/swift",
-    text: "Swift",
-    classes: "bg-pink-500 motion-delay-[1000ms]",
-  },
-  {
     to: "/ruby",
     text: "Ruby",
     classes: "bg-red-600 motion-delay-[1050ms]",
@@ -82,11 +77,6 @@ const navLinks = [
     to: "/perl",
     text: "Perl",
     classes: "bg-pink-700 motion-delay-[1250ms]",
-  },
-  {
-    to: "/scala",
-    text: "Scala",
-    classes: "bg-green-500 motion-delay-[1300ms]",
   },
   {
     to: "/julia",

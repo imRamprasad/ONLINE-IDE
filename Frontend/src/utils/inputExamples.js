@@ -143,15 +143,6 @@ rl.on('line', (input: string) => {
 });`,
     preview: "Input: Jack\nOutput: Hello, Jack!"
   },
-  swift: {
-    title: "Swift - Read Input",
-    code: `import Foundation
-
-if let name = readLine() {
-  print("Hello, \\(name)!")
-}`,
-    preview: "Input: Kate\nOutput: Hello, Kate!"
-  },
   kotlin: {
     title: "Kotlin - Read Input",
     code: `fun main() {

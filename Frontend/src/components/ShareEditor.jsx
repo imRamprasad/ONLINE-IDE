@@ -17,11 +17,9 @@ import {
   SiJavascript,
   SiRust,
   SiMongodb,
-  SiSwift,
   SiRuby,
   SiDart,
   SiPerl,
-  SiScala,
   SiJulia,
 } from "react-icons/si";
 import { RiJavaFill } from "react-icons/ri";
@@ -41,11 +39,9 @@ const languageIcons = {
   javascript: SiJavascript,
   rust: SiRust,
   mongodb: SiMongodb,
-  swift: SiSwift,
   ruby: SiRuby,
   dart: SiDart,
   perl: SiPerl,
-  scala: SiScala,
   julia: SiJulia,
   go: FaGolang,
   java: RiJavaFill,
@@ -60,7 +56,7 @@ const languageIcons = {
 
 const isUUIDMatch = (inputString) => {
   const regex =
-    /(c|cpp|csharp|dart|go|htmlcssjs|java|javascript|julia|kotlin|mongodb|perl|python|ruby|rust|scala|sql|swift|typescript|verilog)-([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/;
+    /(c|cpp|csharp|dart|go|htmlcssjs|java|javascript|julia|kotlin|mongodb|perl|python|ruby|rust|sql|typescript|verilog)-([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/;
   return regex.test(inputString);
 };
 

@@ -21,9 +21,7 @@
  * - python
  * - ruby
  * - rust
- * - scala
  * - sql
- * - swift
  * - typescript
  * - verilog
  */
@@ -122,24 +120,10 @@ export const LANGUAGE_CONFIGS = {
     compileTimeout: 10000,
     runTimeout: 10000,
   },
-  scala: {
-    name: 'scala',
-    version: 'latest',
-    fileName: 'Main.scala',
-    compileTimeout: 10000,
-    runTimeout: 10000,
-  },
   sql: {
     name: 'sql',
     version: 'latest',
     fileName: 'main.sql',
-    compileTimeout: 10000,
-    runTimeout: 10000,
-  },
-  swift: {
-    name: 'swift',
-    version: 'latest',
-    fileName: 'main.swift',
     compileTimeout: 10000,
     runTimeout: 10000,
   },
