@@ -61,11 +61,11 @@ const Header = ({ isDarkMode, toggleTheme }) => {
   };
 
   const handleBack = () => {
-    if (window.history.length > 1) {
+    if (location.key && location.key !== "default") {
       navigate(-1);
       return;
     }
-    navigate("/");
+    navigate("/", { replace: true });
   };
 
   const formatUsername = (name) =>
@@ -78,7 +78,7 @@ const Header = ({ isDarkMode, toggleTheme }) => {
           <button
             type="button"
             onClick={handleBack}
-            className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-gray-700"
+            className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-gray-700 z-20"
             aria-label="Go back"
             title="Back"
           >
