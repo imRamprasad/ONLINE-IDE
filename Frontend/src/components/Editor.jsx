@@ -17,8 +17,8 @@ import { PiFileHtmlFill, PiFileCssFill, PiFileJsFill } from "react-icons/pi";
 import { MdPreview } from "react-icons/md";
 import { IoMdRefreshCircle } from "react-icons/io";
 import { SlSizeFullscreen } from "react-icons/sl";
-import { FaSpinner, FaDownload, FaWrench } from "react-icons/fa6";
-import { FaMagic, FaTrashAlt, FaShare } from "react-icons/fa";
+import { FaSpinner, FaDownload, FaPlay, FaCopy } from "react-icons/fa6";
+import { FaTrashAlt, FaShare } from "react-icons/fa";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 
 const EditorSection = ({
@@ -462,6 +462,53 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const copyHtml = async () => {
+    const editorCode = JSON.parse(sessionStorage.getItem(storageKey));
+
+    if (!editorCode) {
+      return;
+    }
+
+    const { html, css, javascript } = editorCode;
+
+    if (
+      html.trim().length === 0 &&
+      css.trim().length === 0 &&
+      javascript.trim().length === 0
+    ) {
+      return;
+    }
+
+    const cleanedHtml = html
+      .replace(/<html.*?>|<\/html>/gi, "")
+      .replace(/<head.*?>|<\/head>/gi, "")
+      .replace(/<body.*?>|<\/body>/gi, "");
+
+    const finalHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <style>${css || ""}</style>
+        </head>
+        <body>
+          ${cleanedHtml || ""}
+          <script>${javascript || ""}</script>
+        </body>
+      </html>
+    `;
+
+    try {
+      await navigator.clipboard.writeText(finalHtml);
+    } catch {
+      Swal.fire({
+        title: "Failed to copy",
+        text: "Could not copy the HTML to clipboard.",
+        icon: "error",
+      });
+    }
   };
 
   const scrollToLastLine = (editorId) => {
@@ -1271,6 +1318,23 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
 
   const buttonData = [
     {
+      text: isRefreshing ? "Running..." : "Run",
+      icon: isRefreshing ? (
+        <FaSpinner className="mr-2 mt-1 animate-spin" />
+      ) : (
+        <FaPlay className="mr-2 mt-1" />
+      ),
+      onClick: handleRefresh,
+      disabled:
+        (code.html.trim().length === 0 &&
+          code.css.trim().length === 0 &&
+          code.javascript.trim().length === 0) ||
+        isRefreshing,
+      color: "ide-action-button is-run",
+      loadingAction: null,
+      iconLoading: null,
+    },
+    {
       text: "Clear All",
       icon: <FaTrashAlt className="mr-2 mt-1" />,
       onClick: clearAll,
@@ -1280,7 +1344,19 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
           code.javascript.length === 0) ||
         loadingAction === "generate" ||
         loadingAction === "refactor",
-      color: "bg-red-500",
+      color: "ide-action-button is-clear",
+      loadingAction: null,
+      iconLoading: null,
+    },
+    {
+      text: "Copy",
+      icon: <FaCopy className="mr-2 mt-1" />,
+      onClick: copyHtml,
+      disabled:
+        code.html.trim().length === 0 &&
+        code.css.trim().length === 0 &&
+        code.javascript.trim().length === 0,
+      color: "ide-action-button is-copy",
       loadingAction: null,
       iconLoading: null,
     },
@@ -1292,54 +1368,13 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
         code.html.trim().length === 0 &&
         code.css.trim().length === 0 &&
         code.javascript.trim().length === 0,
-      color: "bg-orange-500",
+      color: "ide-action-button is-download",
       loadingAction: null,
       iconLoading: null,
     },
     {
-      text: generateBtnTxt,
-      icon:
-        loadingAction === "generate" ? (
-          <FaSpinner className="mr-2 mt-1 animate-spin" />
-        ) : (
-          <FaMagic className="mr-2 mt-1" />
-        ),
-      onClick: () => {
-        if (!isRefactorBtnPressed) {
-          generateCodeMain();
-        }
-      },
-      disabled: loadingAction === "generate" || loadingAction === "refactor",
-      color: "bg-green-500",
-      loadingAction: "generate",
-      iconLoading: <FaSpinner className="mr-2 mt-1 animate-spin" />,
-    },
-    {
-      text: refactorBtnTxt,
-      icon:
-        loadingAction === "refactor" ? (
-          <FaSpinner className="mr-2 mt-1 animate-spin" />
-        ) : (
-          <FaWrench className="mr-2 mt-1" />
-        ),
-      onClick: () => {
-        if (!isGenerateBtnPressed) {
-          refactorCode();
-        }
-      },
-      disabled:
-        (code.html.trim().length === 0 &&
-          code.css.trim().length === 0 &&
-          code.javascript.trim().length === 0) ||
-        loadingAction === "generate" ||
-        loadingAction === "refactor",
-      color: "bg-yellow-500",
-      loadingAction: "refactor",
-      iconLoading: <FaSpinner className="mr-2 mt-1 animate-spin" />,
-    },
-    {
       onClick: shareLink,
-      color: "bg-fuchsia-500",
+      color: "ide-action-button is-share",
       icon: <FaShare className="mr-2 mt-1" />,
       text: "Share",
       disabled:

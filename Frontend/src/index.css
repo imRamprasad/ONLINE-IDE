@@ -188,6 +188,74 @@ body {
   box-shadow: 0 18px 34px rgba(79, 70, 229, 0.45);
 }
 
+/* Premium action buttons for editor toolbars */
+.ide-action-button {
+  --btn-from: rgba(30, 41, 59, 0.85);
+  --btn-to: rgba(15, 23, 42, 0.95);
+  background: linear-gradient(135deg, var(--btn-from), var(--btn-to));
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 12px;
+  box-shadow: 0 12px 24px rgba(2, 6, 23, 0.45);
+  letter-spacing: 0.02em;
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.ide-action-button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(148, 163, 184, 0.55);
+  box-shadow: 0 16px 32px rgba(2, 6, 23, 0.55);
+}
+
+.ide-action-button.is-run {
+  --btn-from: rgba(30, 41, 59, 0.9);
+  --btn-to: rgba(17, 24, 39, 0.98);
+  border-color: rgba(94, 234, 212, 0.35);
+}
+
+.ide-action-button.is-clear {
+  --btn-from: rgba(39, 39, 42, 0.9);
+  --btn-to: rgba(9, 9, 11, 0.98);
+  border-color: rgba(244, 63, 94, 0.35);
+}
+
+.ide-action-button.is-copy {
+  --btn-from: rgba(30, 41, 59, 0.9);
+  --btn-to: rgba(15, 23, 42, 0.98);
+  border-color: rgba(129, 140, 248, 0.35);
+}
+
+.ide-action-button.is-download {
+  --btn-from: rgba(24, 24, 27, 0.92);
+  --btn-to: rgba(9, 9, 11, 0.98);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.ide-action-button.is-generate {
+  --btn-from: rgba(30, 41, 59, 0.9);
+  --btn-to: rgba(15, 23, 42, 0.98);
+  border-color: rgba(52, 211, 153, 0.35);
+}
+
+.ide-action-button.is-refactor {
+  --btn-from: rgba(24, 24, 27, 0.92);
+  --btn-to: rgba(9, 9, 11, 0.98);
+  border-color: rgba(250, 204, 21, 0.3);
+}
+
+.ide-action-button.is-share {
+  --btn-from: rgba(30, 41, 59, 0.9);
+  --btn-to: rgba(15, 23, 42, 0.98);
+  border-color: rgba(216, 180, 254, 0.35);
+}
+
+/* Light mode buttons keep a dark premium surface */
+:root .ide-action-button {
+  --btn-from: rgba(30, 41, 59, 0.92);
+  --btn-to: rgba(15, 23, 42, 0.98);
+  color: #f8fafc;
+  box-shadow: 0 12px 24px rgba(2, 6, 23, 0.35);
+}
+
 .dark div:where(.swal2-container) div:where(.swal2-popup) {
   background: #333;
   color: #e8e6e3;

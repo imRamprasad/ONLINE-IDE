@@ -20,10 +20,8 @@ import {
   FaPlay,
   FaDownload,
   FaCopy,
-  FaWrench,
 } from "react-icons/fa6";
-import { FaMagic, FaTrashAlt, FaShare } from "react-icons/fa";
-import { GiBrain } from "react-icons/gi";
+import { FaTrashAlt, FaShare } from "react-icons/fa";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 
 const CodeEditor = ({
@@ -1032,7 +1030,7 @@ const CodeEditor = ({
   const buttonsConfig = [
     {
       action: runCode,
-      bgColor: "bg-blue-500",
+      bgColor: "ide-action-button is-run",
       icon:
         loadingActionRun === "run" ? (
           <FaSpinner className="mr-2 mt-1 animate-spin" />
@@ -1049,7 +1047,7 @@ const CodeEditor = ({
     },
     {
       action: clearAll,
-      bgColor: "bg-red-500",
+      bgColor: "ide-action-button is-clear",
       icon: <FaTrashAlt className="mr-2 mt-1" />,
       text: "Clear All",
       disabled:
@@ -1060,64 +1058,21 @@ const CodeEditor = ({
     },
     {
       action: handleCopy,
-      bgColor: "bg-purple-500",
+      bgColor: "ide-action-button is-copy",
       icon: <FaCopy className="mr-2 mt-1" />,
       text: cpyBtnState,
       disabled: code.trim().length === 0,
     },
     {
       action: () => downloadFile(code, "file", language),
-      bgColor: "bg-orange-500",
+      bgColor: "ide-action-button is-download",
       icon: <FaDownload className="mr-2 mt-1" />,
       text: "Download",
       disabled: code.trim().length === 0,
     },
     {
-      action: generateCodeMain,
-      bgColor: "bg-green-500",
-      icon:
-        loadingActionGen === "thinking" ? (
-          <GiBrain className="mr-2 mt-1 animate-bounce" />
-        ) : loadingActionGen === "generate" ? (
-          <FaSpinner className="mr-2 mt-1 animate-spin" />
-        ) : (
-          <FaMagic className="mr-2 mt-1" />
-        ),
-      text:
-        loadingActionGen === "thinking"
-          ? "Thinking..."
-          : loadingActionGen === "generate"
-          ? "Generating..."
-          : "Generate",
-      disabled:
-        isDownloadBtnPressed || isRefactorBtnPressed || isGenerateBtnPressed,
-    },
-    {
-      action: refactorCode,
-      bgColor: "bg-yellow-500",
-      icon:
-        loadingActionRefactor === "thinking" ? (
-          <GiBrain className="mr-2 mt-1 animate-bounce" />
-        ) : loadingActionRefactor === "refactor" ? (
-          <FaSpinner className="mr-2 mt-1 animate-spin" />
-        ) : (
-          <FaWrench className="mr-2 mt-1" />
-        ),
-      text:
-        loadingActionRefactor === "thinking"
-          ? "Thinking..."
-          : loadingActionRefactor === "refactor"
-          ? "Refactoring..."
-          : "Refactor",
-      disabled:
-        code.trim().length === 0 ||
-        isDownloadBtnPressed ||
-        isGenerateBtnPressed ||
-        isRefactorBtnPressed,
-    },
-    {
       action: shareLink,
-      bgColor: "bg-fuchsia-500",
+      bgColor: "ide-action-button is-share",
       icon: <FaShare className="mr-2 mt-1" />,
       text: "Share",
       disabled:
