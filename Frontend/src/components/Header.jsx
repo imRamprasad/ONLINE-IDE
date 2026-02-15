@@ -1,64 +1,20 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FaBarsStaggered } from "react-icons/fa6";
 import { IoArrowBack } from "react-icons/io5";
-import { SiIfixit } from "react-icons/si";
 import { RxMoon, RxSun } from "react-icons/rx";
-import Swal from "sweetalert2/dist/sweetalert2.js";
-import "sweetalert2/src/sweetalert2.scss";
 import {
-  LOCAL_STORAGE_USERNAME_KEY,
-  LOCAL_STORAGE_LOGIN_KEY,
   LOCAL_STORAGE_THEME_KEY,
 } from "../utils/constants";
 
 const Header = ({ isDarkMode, toggleTheme }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  // Initialize state from localStorage
-  const [username, setUsername] = useState(() => {
-    const storedUsername = localStorage.getItem(LOCAL_STORAGE_USERNAME_KEY);
-    const login = localStorage.getItem(LOCAL_STORAGE_LOGIN_KEY);
-    return storedUsername && login === "true" ? storedUsername : "";
-  });
-  
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    const storedUsername = localStorage.getItem(LOCAL_STORAGE_USERNAME_KEY);
-    const login = localStorage.getItem(LOCAL_STORAGE_LOGIN_KEY);
-    return !!(storedUsername && login === "true");
-  });
-  
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  const clearAuthState = () => {
-    localStorage.removeItem(LOCAL_STORAGE_USERNAME_KEY);
-    localStorage.removeItem(LOCAL_STORAGE_LOGIN_KEY);
-  };
 
   /* Theme sync */
   useEffect(() => {
     const savedTheme = localStorage.getItem(LOCAL_STORAGE_THEME_KEY);
     document.documentElement.classList.toggle("dark", savedTheme === "dark");
   }, []);
-
-  const handleLogout = () => {
-    Swal.fire({
-      title: "Are you sure?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, log me out!",
-      cancelButtonText: "No, cancel!",
-      confirmButtonColor: "#da4242",
-      reverseButtons: true,
-      allowOutsideClick: false,
-    }).then((result) => {
-      if (result.isConfirmed) {
-        clearAuthState();
-        setIsLoggedIn(false);
-        setUsername("");
-      }
-    });
-  };
 
   const handleBack = () => {
     if (location.key && location.key !== "default") {
@@ -67,9 +23,6 @@ const Header = ({ isDarkMode, toggleTheme }) => {
     }
     navigate("/", { replace: true });
   };
-
-  const formatUsername = (name) =>
-    name.length > 15 ? `${name.slice(0, 5)}...${name.slice(-5)}` : name;
 
   return (
     <>
@@ -98,25 +51,6 @@ const Header = ({ isDarkMode, toggleTheme }) => {
             <span>CUTM IDE</span>
           </Link>
 
-          {/* Desktop */}
-          {isLoggedIn && (
-            <nav className="hidden md:flex space-x-6">
-              <Link
-                to={`/account/${username}`}
-                className="hover:text-slate-500 dark:hover:text-slate-300 transition"
-              >
-                {formatUsername(username)}'s Account
-              </Link>
-
-              <button
-                onClick={handleLogout}
-                className="hover:text-slate-500 dark:hover:text-slate-300 transition"
-              >
-                Logout
-              </button>
-            </nav>
-          )}
-
           <div className="flex items-center space-x-4">
             <button
               onClick={toggleTheme}
@@ -124,37 +58,8 @@ const Header = ({ isDarkMode, toggleTheme }) => {
             >
               {isDarkMode ? <RxMoon /> : <RxSun />}
             </button>
-
-            {isLoggedIn && (
-              <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="p-2 rounded-full hover:bg-slate-200/70 dark:hover:bg-white/10 transition md:hidden"
-              >
-                {!isDropdownOpen ? <FaBarsStaggered /> : <SiIfixit />}
-              </button>
-            )}
           </div>
         </div>
-
-        {/* Mobile */}
-        {isDropdownOpen && isLoggedIn && (
-          <nav className="md:hidden mt-4 bg-white/70 dark:bg-slate-900/60 p-4 rounded-md space-y-4 border border-slate-200/70 dark:border-slate-700/60 shadow-lg">
-            <Link
-              to={`/account/${username}`}
-              className="block text-center"
-              onClick={() => setIsDropdownOpen(false)}
-            >
-              {formatUsername(username)}'s Account
-            </Link>
-
-            <button
-              onClick={handleLogout}
-              className="block w-full text-center"
-            >
-              Logout
-            </button>
-          </nav>
-        )}
       </header>
     </>
   );

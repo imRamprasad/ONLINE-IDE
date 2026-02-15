@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { IoLogoPython } from "react-icons/io5";
 import {
   SiJavascript,
@@ -19,20 +19,12 @@ import {
 } from "react-icons/pi";
 import { TbBrandKotlin } from "react-icons/tb";
 import { BiLogoTypescript } from "react-icons/bi";
-import Register from "../pages/Register";
-import Login from "../pages/Login";
-import ForgotPassword from "../pages/ForgotPassword";
-import Accounts from "../pages/Accounts";
 import NotFound from "../pages/NotFound";
 import NavigationLinks from "../components/NavigationLinks";
 import CodeEditor from "../components/CodeEditor";
 import ShareEditor from "../components/ShareEditor";
 import DebugInput from "../components/DebugInput";
 import Editor from "../components/Editor";
-import {
-  LOCAL_STORAGE_TOKEN_KEY,
-  LOCAL_STORAGE_USERNAME_KEY,
-} from "../utils/constants";
 import samplePy from "../samples/python.py?raw";
 import sampleJs from "../samples/javascript.js?raw";
 import sampleC from "../samples/c.c?raw";
@@ -51,20 +43,6 @@ import sampleBash from "../samples/bash.sh?raw";
 import sampleHtml from "../samples/index.html?raw";
 import sampleCss from "../samples/style.css?raw";
 import sampleScript from "../samples/script.js?raw";
-
-const isAuthenticated = () => !!localStorage.getItem(LOCAL_STORAGE_TOKEN_KEY);
-
-const ProtectedRoute = ({ element }) => {
-  return isAuthenticated() ? element : <Navigate to="/login" />;
-};
-
-const RedirectedRoute = ({ element }) => {
-  return !isAuthenticated() ? element : <Navigate to="/" />;
-};
-
-const GetUsername = () => {
-  return localStorage.getItem(LOCAL_STORAGE_USERNAME_KEY) || "";
-};
 
 const languages = [
   {
@@ -162,20 +140,6 @@ const languages = [
 const EditorRoutes = ({ isDarkMode }) => (
   <div className="flex-grow">
     <Routes>
-      <Route
-        path="/register"
-        element={<RedirectedRoute element={<Register isDarkMode />} />}
-      />
-
-      <Route path="/login" element={<RedirectedRoute element={<Login />} />} />
-
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-
-      <Route
-        path={`/account/${GetUsername()?.trim() || "*"}`}
-        element={<ProtectedRoute element={<Accounts />} />}
-      />
-
       <Route path="/" element={<NavigationLinks isDarkMode={isDarkMode} />} />
 
       <Route

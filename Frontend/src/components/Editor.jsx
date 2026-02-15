@@ -596,7 +596,7 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
 
   const generateCodeMain = async () => {
     if (!isLoggedIn) {
-      navigate("/login");
+      navigate("/");
       return;
     }
 
@@ -833,7 +833,7 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
 
   const refactorCode = async () => {
     if (!isLoggedIn) {
-      navigate("/login");
+      navigate("/");
       return;
     }
 
@@ -1048,7 +1048,7 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
 
   const shareLink = async () => {
     if (!isLoggedIn) {
-      navigate("/login");
+      navigate("/");
       return;
     }
 

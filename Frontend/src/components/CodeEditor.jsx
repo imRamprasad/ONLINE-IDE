@@ -288,7 +288,7 @@ const CodeEditor = ({
 
   const generateCodeMain = async () => {
     if (!isLoggedIn) {
-      navigate("/login");
+      navigate("/");
       return;
     }
 
@@ -511,7 +511,7 @@ const CodeEditor = ({
 
   const refactorCode = async () => {
     if (!isLoggedIn) {
-      navigate("/login");
+      navigate("/");
       return;
     }
 
@@ -640,7 +640,7 @@ const CodeEditor = ({
 
   const shareLink = async () => {
     if (!isLoggedIn) {
-      navigate("/login");
+      navigate("/");
       return;
     }
 
