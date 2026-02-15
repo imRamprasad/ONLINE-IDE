@@ -34,19 +34,6 @@ const SharedLinks = () => {
 
   const baseUrl = window.location.origin;
 
-  const buttonColors = [
-    "bg-indigo-400",
-    "bg-teal-400",
-    "bg-yellow-400",
-    "bg-red-400",
-    "bg-purple-400",
-    "bg-lime-400",
-    "bg-green-400",
-    "bg-pink-400",
-    "bg-orange-400",
-    "bg-blue-400",
-  ];
-
   const fetchSharedLinks = async () => {
     try {
       const token = localStorage.getItem(LOCAL_STORAGE_TOKEN_KEY);
@@ -291,19 +278,19 @@ const SharedLinks = () => {
   const visibleLinks = sharedLinks.slice(startIndex, startIndex + itemsPerPage);
 
   return (
-    <div className="flex justify-center px-12 pb-12 motion-delay-[1400ms] motion-preset-rebound-down">
-      <div className="w-full max-w-screen-lg">
+    <div className="flex justify-center px-4 sm:px-8 lg:px-12 pb-12 motion-delay-[1400ms] motion-preset-rebound-down">
+      <div className="w-full max-w-6xl">
         <div className="mb-6">
           {isLoggedIn && visibleLinks.length > 0 && (
             <div className="flex items-center">
-              <h2 className="text-2xl font-bold mb-4 text-left mr-4 text-gray-700 underline underline-offset-2 decoration-4 decoration-blue-500 hover:decoration-blue-400 dark:decoration-blue-600 dark:text-gray-300 dark:hover:decoration-blue-700">
+              <h2 className="text-2xl font-bold mb-4 text-left mr-4 ide-section-title">
                 Shared Links
               </h2>
               <button
                 onClick={handleRefresh}
                 disabled={isRefreshing}
                 title="refresh"
-                className={`bg-blue-500 text-white px-2 py-2 rounded-full mb-4 transform transition duration-200 ease-in-out cursor-pointer hover:bg-blue-600 hover:scale-95 focus:outline-none ${
+                className={`ide-icon-button px-2 py-2 mb-4 transform transition duration-200 ease-in-out cursor-pointer focus:outline-none ${
                   isRefreshing ? "animate-spin" : ""
                 }`}
               >
@@ -313,54 +300,51 @@ const SharedLinks = () => {
           )}
 
           {isLoggedIn && visibleLinks.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-items-center">
-              {visibleLinks.map(({ title, shareId, expiryTime }, index) => {
-                const colorClass = buttonColors[index % buttonColors.length];
-                return (
-                  <div key={index} className="relative w-full">
-                    <div className="flex justify-between items-center w-full">
-                      <Link
-                        to={`${baseUrl}/${shareId}`}
-                        aria-label={title}
-                        title={`${title}\n${
-                          new Date(expiryTime).toLocaleString() || ""
-                        }`}
-                        className={`w-full px-8 py-4 text-xl font-semibold ${colorClass} text-white text-center rounded-lg shadow-lg whitespace-nowrap overflow-hidden text-ellipsis hover:scale-105 transform transition-all duration-300 sm:px-6 sm:py-3 sm:text-lg md:px-8 md:py-4 lg:px-8 lg:py-4`}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6 justify-items-center">
+              {visibleLinks.map(({ title, shareId, expiryTime }, index) => (
+                <div key={index} className="relative w-full">
+                  <div className="flex justify-between items-center w-full gap-3">
+                    <Link
+                      to={`${baseUrl}/${shareId}`}
+                      aria-label={title}
+                      title={`${title}\n${
+                        new Date(expiryTime).toLocaleString() || ""
+                      }`}
+                      className="ide-card ide-card-link w-full whitespace-nowrap overflow-hidden text-ellipsis"
+                    >
+                      {title
+                        ? `${title.charAt(0).toUpperCase()}${
+                            title.length > 30
+                              ? title.slice(1, 30) + "..." + title.slice(-3)
+                              : title.slice(1)
+                          }`
+                        : "Untitled"}
+                    </Link>
+
+                    <div className="flex flex-col items-center w-10 space-y-2">
+                      <button
+                        onClick={() => handleCopy(shareId)}
+                        title="Copy link"
+                        className="ide-icon-button w-full py-2 cursor-pointer focus:outline-none"
                       >
-                        {title
-                          ? `${title.charAt(0).toUpperCase()}${
-                              title.length > 30
-                                ? title.slice(1, 30) + "..." + title.slice(-3)
-                                : title.slice(1)
-                            }`
-                          : "Untitled"}
-                      </Link>
+                        {buttonStates[shareId]?.text === "Copied" ? (
+                          <MdDone className="mx-auto" />
+                        ) : (
+                          <FiClipboard className="mx-auto" />
+                        )}
+                      </button>
 
-                      <div className="flex flex-col items-center ml-2 w-10 space-y-0.5">
-                        <button
-                          onClick={() => handleCopy(shareId)}
-                          title="Copy link"
-                          className="w-full py-1.5 text-white bg-green-500 hover:bg-green-700 rounded-lg cursor-pointer focus:outline-none transform transition duration-200 ease-in-out hover:scale-105"
-                        >
-                          {buttonStates[shareId]?.text === "Copied" ? (
-                            <MdDone className="mx-auto" />
-                          ) : (
-                            <FiClipboard className="mx-auto" />
-                          )}
-                        </button>
-
-                        <button
-                          onClick={() => handleDelete(shareId)}
-                          title="Delete"
-                          className="w-full py-1.5 text-white bg-red-500 hover:bg-red-700 rounded-lg cursor-pointer focus:outline-none transform transition duration-200 ease-in-out hover:scale-105"
-                        >
-                          <CgTrash className="mx-auto" />
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => handleDelete(shareId)}
+                        title="Delete"
+                        className="ide-icon-button ide-icon-button--danger w-full py-2 cursor-pointer focus:outline-none"
+                      >
+                        <CgTrash className="mx-auto" />
+                      </button>
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           )}
 
@@ -369,7 +353,7 @@ const SharedLinks = () => {
               <button
                 onClick={handlePrev}
                 disabled={currentPage === 1}
-                className="bg-blue-500 text-white px-6 py-2 rounded-lg cursor-pointer transform transition duration-200 ease-in-out hover:scale-105 flex items-center"
+                className="ide-primary-button px-6 py-2 cursor-pointer transform transition duration-200 ease-in-out flex items-center disabled:opacity-60"
               >
                 <FiArrowLeft className="mr-2" />
                 Previous
@@ -377,7 +361,7 @@ const SharedLinks = () => {
               <button
                 onClick={handleNext}
                 disabled={currentPage * itemsPerPage >= sharedLinks.length}
-                className="bg-blue-500 text-white px-6 py-2 rounded-lg cursor-pointer transform transition duration-200 ease-in-out hover:scale-105 flex items-center"
+                className="ide-primary-button px-6 py-2 cursor-pointer transform transition duration-200 ease-in-out flex items-center disabled:opacity-60"
               >
                 Next
                 <FiArrowRight className="ml-2" />

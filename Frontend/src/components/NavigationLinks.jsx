@@ -6,82 +6,82 @@ const navLinks = [
   {
     to: "/frontend",
     text: "HTML/CSS/JS",
-    classes: "bg-emerald-600 motion-delay-[350ms]",
+    classes: "motion-delay-[350ms]",
   },
   {
     to: "/bash",
     text: "Bash",
-    classes: "bg-blue-500 motion-delay-[400ms]",
+    classes: "motion-delay-[400ms]",
   },
   {
     to: "/python",
     text: "Python",
-    classes: "bg-green-500 motion-delay-[450ms]",
+    classes: "motion-delay-[450ms]",
   },
   {
     to: "/javascript",
     text: "Javascript",
-    classes: "bg-purple-500 motion-delay-[500ms]",
+    classes: "motion-delay-[500ms]",
   },
   {
     to: "/c",
     text: "C",
-    classes: "bg-red-500 motion-delay-[550ms]",
+    classes: "motion-delay-[550ms]",
   },
   {
     to: "/cpp",
     text: "C++",
-    classes: "bg-blue-700 motion-delay-[600ms]",
+    classes: "motion-delay-[600ms]",
   },
   {
     to: "/java",
     text: "Java",
-    classes: "bg-orange-500 motion-delay-[650ms]",
+    classes: "motion-delay-[650ms]",
   },
   {
     to: "/csharp",
     text: "C#",
-    classes: "bg-teal-500 motion-delay-[700ms]",
+    classes: "motion-delay-[700ms]",
   },
   {
     to: "/rust",
     text: "Rust",
-    classes: "bg-yellow-600 motion-delay-[750ms]",
+    classes: "motion-delay-[750ms]",
   },
   {
     to: "/go",
     text: "Go",
-    classes: "bg-green-700 motion-delay-[800ms]",
+    classes: "motion-delay-[800ms]",
   },
   {
     to: "/sql",
     text: "SQL",
-    classes: "bg-indigo-500 motion-delay-[900ms]",
+    classes: "motion-delay-[900ms]",
   },
   {
     to: "/ruby",
     text: "Ruby",
-    classes: "bg-red-600 motion-delay-[1050ms]",
+    classes: "motion-delay-[1050ms]",
   },
   {
     to: "/typescript",
     text: "Typescript",
-    classes: "bg-blue-600 motion-delay-[1100ms]",
+    classes: "motion-delay-[1100ms]",
   },
   {
     to: "/kotlin",
     text: "Kotlin",
-    classes: "bg-teal-700 motion-delay-[1200ms]",
+    classes: "motion-delay-[1200ms]",
   },
   {
     to: "/perl",
     text: "Perl",
-    classes: "bg-pink-700 motion-delay-[1250ms]",
+    classes: "motion-delay-[1250ms]",
   },
   {
     to: "/julia",
     text: "Julia",
-    classes: "bg-yellow-500 motion-delay-[1350ms]",
+    classes: "motion-delay-[1350ms]",
   },
 ];
 
@@ -94,15 +94,15 @@ const NavigationLinks = ({ isDarkMode = true }) => {
 
   return (
     <>
-      <div className="flex justify-center items-center min-h-[65vh] p-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-4 px-4 sm:px-6 md:px-8 lg:px-8">
+      <div className="flex justify-center items-center min-h-[65vh] px-4 pt-8 pb-4">
+        <div className="grid w-full max-w-6xl grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 md:gap-6">
           {navLinks.map(({ to, text, classes }) => (
             <Link
               key={to}
               to={`${baseUrl}${to}`}
               aria-label={`Navigate to ${text} Editor`}
               title={text}
-              className={`w-full px-8 py-4 text-xl font-semibold motion-preset-rebound-down ${classes} text-white text-center rounded-lg shadow-lg whitespace-nowrap overflow-hidden text-ellipsis hover:scale-105 transform transition-all duration-300 sm:px-6 sm:py-3 sm:text-lg md:px-8 md:py-4 lg:px-8 lg:py-4`}
+              className={`ide-card ide-card-link motion-preset-rebound-down ${classes} whitespace-nowrap overflow-hidden text-ellipsis`}
             >
               {text}
             </Link>

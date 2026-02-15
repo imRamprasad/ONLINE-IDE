@@ -2,6 +2,192 @@
 @plugin "tailwindcss-motion";
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Premium color system and typography (light defaults) */
+:root {
+  --ide-font: "JetBrains Mono", "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", monospace;
+  --ide-font-mono: "JetBrains Mono", "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", monospace;
+  --ide-bg: #eef2f7;
+  --ide-bg-spot: rgba(59, 130, 246, 0.2);
+  --ide-bg-spot-2: rgba(14, 165, 233, 0.18);
+  --ide-surface: rgba(255, 255, 255, 0.9);
+  --ide-surface-2: rgba(241, 245, 249, 0.95);
+  --ide-border: rgba(148, 163, 184, 0.4);
+  --ide-text: #0f172a;
+  --ide-muted: #475569;
+  --ide-accent: #2563eb;
+  --ide-accent-2: #60a5fa;
+  --ide-shadow: 0 14px 32px rgba(15, 23, 42, 0.12);
+  --ide-card-shadow: 0 18px 36px rgba(15, 23, 42, 0.18);
+  --ide-glow: 0 0 0 1px rgba(37, 99, 235, 0.2), 0 0 20px rgba(59, 130, 246, 0.18);
+  --ide-header-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(241, 245, 249, 0.9));
+  --ide-footer-bg: linear-gradient(180deg, rgba(241, 245, 249, 0.9), rgba(226, 232, 240, 0.9));
+}
+
+/* Dark mode stays premium and deep */
+.dark {
+  --ide-bg: #070b14;
+  --ide-bg-spot: rgba(99, 102, 241, 0.24);
+  --ide-bg-spot-2: rgba(14, 165, 233, 0.2);
+  --ide-surface: rgba(12, 17, 28, 0.82);
+  --ide-surface-2: rgba(15, 23, 42, 0.92);
+  --ide-border: rgba(148, 163, 184, 0.22);
+  --ide-text: #e5e7eb;
+  --ide-muted: #9ca3af;
+  --ide-accent: #7aa2ff;
+  --ide-accent-2: #a5b4fc;
+  --ide-shadow: 0 20px 48px rgba(0, 0, 0, 0.65);
+  --ide-card-shadow: 0 24px 50px rgba(0, 0, 0, 0.7);
+  --ide-glow: 0 0 0 1px rgba(122, 162, 255, 0.25), 0 0 30px rgba(99, 102, 241, 0.18);
+  --ide-header-bg: linear-gradient(180deg, rgba(10, 15, 28, 0.92), rgba(8, 12, 22, 0.82));
+  --ide-footer-bg: linear-gradient(180deg, rgba(10, 15, 28, 0.85), rgba(6, 9, 18, 0.92));
+}
+
+/* Base typography and readability */
+body {
+  font-family: var(--ide-font);
+  color: var(--ide-text);
+  background: var(--ide-bg);
+  letter-spacing: 0.01em;
+}
+
+/* Deep gradient background with subtle glows */
+.ide-shell {
+  background:
+    radial-gradient(50% 50% at 18% 0%, var(--ide-bg-spot) 0%, rgba(0, 0, 0, 0) 62%),
+    radial-gradient(40% 40% at 82% 5%, var(--ide-bg-spot-2) 0%, rgba(0, 0, 0, 0) 65%),
+    var(--ide-bg);
+}
+
+/* Header stays structured, now with premium blur and border glow */
+.ide-header {
+  background: var(--ide-header-bg);
+  border-bottom: 1px solid var(--ide-border);
+  box-shadow: var(--ide-shadow);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+/* Minimal footer with reduced brightness */
+.ide-footer {
+  background: var(--ide-footer-bg);
+  border-top: 1px solid var(--ide-border);
+  box-shadow: var(--ide-shadow);
+}
+
+/* Stronger hierarchy for titles */
+.ide-title {
+  font-family: var(--ide-font-mono);
+  letter-spacing: 0.04em;
+}
+
+/* Glass-style language tiles */
+.ide-card {
+  background: linear-gradient(135deg, var(--ide-surface), var(--ide-surface-2));
+  border: 1px solid var(--ide-border);
+  border-radius: 16px;
+  box-shadow: var(--ide-card-shadow);
+  color: var(--ide-text);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  transition: transform 240ms ease, box-shadow 240ms ease, border-color 240ms ease,
+    background 240ms ease;
+}
+
+.ide-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(122, 162, 255, 0.6);
+  box-shadow: var(--ide-glow);
+}
+
+.ide-card:focus-visible {
+  outline: 2px solid var(--ide-accent-2);
+  outline-offset: 2px;
+}
+
+/* Language tiles: spacing and readability */
+.ide-card-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;
+  padding: 1.2rem 1.6rem;
+  font-family: var(--ide-font-mono);
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+@media (min-width: 640px) {
+  .ide-card-link {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ide-card-link {
+    font-size: 1.08rem;
+  }
+}
+
+/* Section titles keep a clean developer look */
+.ide-section-title {
+  font-family: var(--ide-font-mono);
+  color: var(--ide-text);
+  letter-spacing: 0.03em;
+}
+
+/* Secondary text for subtle UI */
+.ide-muted {
+  color: var(--ide-muted);
+}
+
+/* Icon buttons: glassy chips with soft glow */
+.ide-icon-button {
+  border-radius: 12px;
+  border: 1px solid rgba(122, 162, 255, 0.35);
+  background: rgba(15, 23, 42, 0.7);
+  color: var(--ide-text);
+  transition: transform 200ms ease, background 200ms ease, border-color 200ms ease;
+}
+
+/* Hover lift and glow */
+.ide-icon-button:hover {
+  transform: translateY(-2px);
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(122, 162, 255, 0.7);
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.4);
+}
+
+/* Danger action stays subtle but clear */
+.ide-icon-button--danger {
+  border-color: rgba(248, 113, 113, 0.55);
+  background: rgba(127, 29, 29, 0.35);
+  color: #fecaca;
+}
+
+/* Danger hover glow */
+.ide-icon-button--danger:hover {
+  background: rgba(127, 29, 29, 0.55);
+  border-color: rgba(248, 113, 113, 0.75);
+}
+
+/* Primary actions for paging controls */
+.ide-primary-button {
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--ide-accent), var(--ide-accent-2));
+  color: #ffffff;
+  border: 1px solid rgba(122, 162, 255, 0.5);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+  box-shadow: 0 14px 28px rgba(79, 70, 229, 0.35);
+}
+
+/* Hover elevation for primary actions */
+.ide-primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 34px rgba(79, 70, 229, 0.45);
+}
+
 .dark div:where(.swal2-container) div:where(.swal2-popup) {
   background: #333;
   color: #e8e6e3;

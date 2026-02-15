@@ -73,12 +73,12 @@ const Header = ({ isDarkMode, toggleTheme }) => {
 
   return (
     <>
-      <header className="bg-gray-800 text-white p-4 relative z-10">
+      <header className="ide-header text-slate-900 dark:text-slate-100 p-4 relative z-10">
         {location.pathname !== "/" && (
           <button
             type="button"
             onClick={handleBack}
-            className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-gray-700 z-20"
+            className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-200/70 dark:hover:bg-white/10 transition z-20"
             aria-label="Go back"
             title="Back"
           >
@@ -88,7 +88,7 @@ const Header = ({ isDarkMode, toggleTheme }) => {
         <div className="max-w-6xl mx-auto flex justify-end items-center relative">
           <Link
             to="/"
-            className="text-2xl font-bold hover:text-gray-300 absolute left-1/2 -translate-x-1/2 flex items-center gap-2"
+            className="text-2xl font-bold ide-title hover:text-slate-500 dark:hover:text-slate-300 absolute left-1/2 -translate-x-1/2 flex items-center gap-2 transition"
           >
             <img
               src="/Cutm_Logo.png"
@@ -103,14 +103,14 @@ const Header = ({ isDarkMode, toggleTheme }) => {
             <nav className="hidden md:flex space-x-6">
               <Link
                 to={`/account/${username}`}
-                className="hover:text-gray-300"
+                className="hover:text-slate-500 dark:hover:text-slate-300 transition"
               >
                 {formatUsername(username)}'s Account
               </Link>
 
               <button
                 onClick={handleLogout}
-                className="hover:text-gray-300"
+                className="hover:text-slate-500 dark:hover:text-slate-300 transition"
               >
                 Logout
               </button>
@@ -120,7 +120,7 @@ const Header = ({ isDarkMode, toggleTheme }) => {
           <div className="flex items-center space-x-4">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-full hover:bg-gray-700"
+              className="p-2 rounded-full hover:bg-slate-200/70 dark:hover:bg-white/10 transition"
             >
               {isDarkMode ? <RxMoon /> : <RxSun />}
             </button>
@@ -128,7 +128,7 @@ const Header = ({ isDarkMode, toggleTheme }) => {
             {isLoggedIn && (
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="p-2 rounded-full hover:bg-gray-700 md:hidden"
+                className="p-2 rounded-full hover:bg-slate-200/70 dark:hover:bg-white/10 transition md:hidden"
               >
                 {!isDropdownOpen ? <FaBarsStaggered /> : <SiIfixit />}
               </button>
@@ -138,7 +138,7 @@ const Header = ({ isDarkMode, toggleTheme }) => {
 
         {/* Mobile */}
         {isDropdownOpen && isLoggedIn && (
-          <nav className="md:hidden mt-4 bg-gray-800 p-4 rounded-md space-y-4">
+          <nav className="md:hidden mt-4 bg-white/70 dark:bg-slate-900/60 p-4 rounded-md space-y-4 border border-slate-200/70 dark:border-slate-700/60 shadow-lg">
             <Link
               to={`/account/${username}`}
               className="block text-center"
