@@ -1046,12 +1046,62 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
     }
   };
 
-  const shareLink = async () => {
-    if (!isLoggedIn) {
-      navigate("/");
-      return;
-    }
+  const openShareSuccessModal = (shareableLink) => {
+    Swal.fire({
+      icon: "success",
+      title: "Share Link is generated",
+      html: `
+        <p class="mb-2">Your code is accessible at:</p>
+        <pre class="bg-gray-100 dark:bg-neutral-800 text-neutral-800 dark:text-white p-2 rounded text-sm overflow-x-auto select-text whitespace-pre-wrap break-words">${shareableLink}</pre>
+        <div class="mt-4 flex flex-wrap gap-3 justify-center">
+          <button id="share-whatsapp" class="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 transition">WhatsApp</button>
+        </div>
+      `,
+      confirmButtonText: "Copy",
+      showCancelButton: true,
+      cancelButtonText: "Close",
+      allowOutsideClick: false,
+      footer: `<p class="text-center text-sm text-red-500 dark:text-red-300">You can delete shared links at any time from <span class="font-bold">Homepage</span>.</p>`,
+      didOpen: () => {
+        const whatsappBtn = document.getElementById("share-whatsapp");
+        const encodedLink = encodeURIComponent(shareableLink);
 
+        if (whatsappBtn) {
+          whatsappBtn.addEventListener("click", () => {
+            const appUrl = `whatsapp://send?text=${encodedLink}`;
+            const webUrl = `https://wa.me/?text=${encodedLink}`;
+
+            window.location.href = appUrl;
+
+            setTimeout(() => {
+              window.open(webUrl, "_blank");
+            }, 700);
+          });
+        }
+      },
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await navigator.clipboard.writeText(shareableLink.toString());
+
+          Swal.fire({
+            title: "URL Copied!",
+            text: "",
+            icon: "success",
+            timer: 2000,
+          });
+        } catch (err) {
+          Swal.fire({
+            title: "Failed to copy",
+            text: "Could not copy the URL to clipboard.",
+            icon: "error",
+          });
+        }
+      }
+    });
+  };
+
+  const shareLink = async () => {
     const editorCode = JSON.parse(sessionStorage.getItem(storageKey));
     const { html: htmlCode, css: cssCode, javascript: jsCode } = editorCode;
 
@@ -1096,34 +1146,8 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
       });
     }
 
-    const { isDismissed } = await Swal.fire({
-      title: "Create Share link",
-      html: ShareLinkModal(capFirst(defaultTitle)),
-      showCancelButton: true,
-      allowOutsideClick: false,
-      footer: `<p class="text-center text-sm text-red-500 dark:text-red-300">You can delete shared links at any time from <span class="font-bold">Homepage</span>.</p>`,
-      didOpen: () => {
-        const modal = Swal.getPopup();
-        modal.addEventListener("keydown", (e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            Swal.clickConfirm();
-          }
-        });
-      },
-    });
-
-    if (isDismissed) {
-      return;
-    }
-
-    const finalTitle =
-      document.getElementById("titleInput").value ||
-      defaultTitle.charAt(0).toUpperCase() + defaultTitle.slice(1);
-    const expiryTime =
-      parseInt(
-        document.querySelector('input[name="expiryTime"]:checked').value
-      ) || 10;
+    const finalTitle = capFirst(defaultTitle);
+    const expiryTime = 1440; // 1 day in minutes
 
     Swal.fire({
       title: "Generating...",
@@ -1145,6 +1169,7 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
       const token = localStorage.getItem(LOCAL_STORAGE_TOKEN_KEY);
 
       if (!token) {
+        openShareSuccessModal(window.location.href);
         return;
       }
 
@@ -1186,36 +1211,7 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
           sessionStorage.removeItem(SESSION_STORAGE_SHARELINKS_KEY);
 
           navigate(`/${shareId}`);
-
-          Swal.fire({
-            icon: "success",
-            title: "Share Link is generated",
-            html: `<p class="mb-2">Your code is accessible at:</p><pre class="bg-gray-100 dark:bg-neutral-800 text-neutral-800 dark:text-white p-2 rounded text-sm overflow-x-auto select-text whitespace-pre-wrap break-words">${shareableLink}</pre>`,
-            confirmButtonText: "Copy",
-            showCancelButton: true,
-            cancelButtonText: "Close",
-            allowOutsideClick: false,
-            footer: `<p class="text-center text-sm text-red-500 dark:text-red-300">You can delete shared links at any time from <span class="font-bold">Homepage</span>.</p>`,
-          }).then(async (result) => {
-            if (result.isConfirmed) {
-              try {
-                await navigator.clipboard.writeText(shareableLink.toString());
-
-                Swal.fire({
-                  title: "URL Copied!",
-                  text: "",
-                  icon: "success",
-                  timer: 2000,
-                });
-              } catch (err) {
-                Swal.fire({
-                  title: "Failed to copy",
-                  text: "Could not copy the URL to clipboard.",
-                  icon: "error",
-                });
-              }
-            }
-          });
+          openShareSuccessModal(shareableLink);
         }
       }
     } catch (error) {
