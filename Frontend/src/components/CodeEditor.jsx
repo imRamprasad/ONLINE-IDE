@@ -3,7 +3,7 @@ import MonacoEditor from "@monaco-editor/react";
 import SimpleTerminal from "./SimpleTerminal";
 import InputHelperModal from "./InputHelperModal";
 import ShareLinkModal from "../utils/ShareLinkModal.js";
-import { executeCode } from "../utils/pistonApi";
+import { executeCode } from "../utils/codeRunner";
 import { apiFetch } from "../utils/apifetch";
 import {
   SESSION_STORAGE_SHARELINKS_KEY,

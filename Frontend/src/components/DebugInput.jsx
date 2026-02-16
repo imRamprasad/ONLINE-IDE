@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { executeCode } from "../utils/pistonApi";
+import { executeCode } from "../utils/codeRunner";
 
 const DebugInput = () => {
   const [language, setLanguage] = useState("python");
@@ -44,10 +44,9 @@ Compile Error: ${result.compileStderr || "(empty)"}
 Error (if any): ${result.error || "(none)"}
 Raw Output: ${result.output || "(empty)"}
 
-=== WHAT TO LOOK FOR IN CONSOLE ===
-1. Look for "📥 stdin added to request: ..." - should show your input
-2. Look for "📝 Piston API Request Body:" - should include stdin field
-3. Look for "📤 Piston API Response:" - shows what API returned`;
+=== NOTES ===
+1. Stdout should include your input if stdin is passed correctly.
+2. If stdout is empty, verify the input format for the selected language.`;
 
       setOutput(resultText);
     } catch (err) {
@@ -151,16 +150,7 @@ rl.on('line', (input) => {
             <li>1. Select a language above</li>
             <li>2. Type input you want to send (e.g., "Alice")</li>
             <li>3. Click "Test Input"</li>
-            <li>4. <strong>Open DevTools (F12) → Console</strong> and look for:</li>
-            <li className="ml-2 text-yellow-300">
-              📥 stdin added to request: "Alice"
-            </li>
-            <li className="ml-2 text-yellow-300">
-              📝 Piston API Request Body (should have stdin field)
-            </li>
-            <li className="ml-2 text-yellow-300">
-              📤 Piston API Response (should show successful output)
-            </li>
+            <li>4. Output should include the input value ("Alice").</li>
           </ol>
         </div>
 
@@ -170,15 +160,9 @@ rl.on('line', (input) => {
             <strong>❌ Troubleshooting:</strong>
           </p>
           <ul className="ml-4 space-y-1">
-            <li>
-              • No "📥 stdin added to request" = stdin is empty (clear textarea and retype)
-            </li>
-            <li>
-              • Request Body has no stdin field = bug in our code (unlikely now)
-            </li>
-            <li>
-              • Response shows empty stdout = Piston API doesn't receive stdin (API issue)
-            </li>
+            <li>• Empty stdout = input not read by the program.</li>
+            <li>• Non-zero exit code = runtime error in the submitted code.</li>
+            <li>• Compile output = compiler error for the selected language.</li>
           </ul>
         </div>
       </div>

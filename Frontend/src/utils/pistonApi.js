@@ -1,33 +1,11 @@
 /**
  * Piston API Utility
- * 
+ *
  * This utility provides functions to execute code using the Piston API.
- * Piston is a code execution engine that supports multiple programming languages.
- * 
  * API Endpoint: https://emkc.org/api/v2/piston/execute
- * 
- * Supported Languages:
- * - bash
- * - c
- * - cpp
- * - csharp
- * - dart
- * - go
- * - java
- * - javascript
- * - julia
- * - kotlin
- * - perl
- * - python
- * - ruby
- * - rust
- * - sql
- * - typescript
- * - verilog
  */
 
-// Language configurations for Piston API
-// Each language has a name and version that Piston supports
+// Language configurations used by the editor
 export const LANGUAGE_CONFIGS = {
   bash: {
     name: 'bash',
@@ -140,95 +118,30 @@ const LANGUAGE_ALIASES = {
   htmlcssjs: 'javascript',
 };
 
-const PISTON_RUNTIME_URL = 'https://emkc.org/api/v2/piston/runtimes';
-let runtimesPromise = null;
+const PISTON_BASE_URL = import.meta.env.VITE_PISTON_BASE_URL || 'https://emkc.org/api/v2/piston';
 
-const fetchRuntimes = async () => {
-  if (!runtimesPromise) {
-    runtimesPromise = fetch(PISTON_RUNTIME_URL).then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return response.json();
-    });
-  }
-
-  return runtimesPromise;
+const PISTON_LANGUAGE_CONFIGS = {
+  bash: { language: 'bash', version: 'latest' },
+  c: { language: 'c', version: 'latest' },
+  cpp: { language: 'cpp', version: 'latest' },
+  csharp: { language: 'csharp', version: 'latest' },
+  go: { language: 'go', version: 'latest' },
+  java: { language: 'java', version: 'latest' },
+  javascript: { language: 'javascript', version: 'latest' },
+  julia: { language: 'julia', version: 'latest' },
+  kotlin: { language: 'kotlin', version: 'latest' },
+  perl: { language: 'perl', version: 'latest' },
+  python: { language: 'python', version: 'latest' },
+  ruby: { language: 'ruby', version: 'latest' },
+  rust: { language: 'rust', version: 'latest' },
+  sql: { language: 'sql', version: 'latest' },
+  typescript: { language: 'typescript', version: 'latest' },
 };
 
-const toVersionParts = (version) => {
-  if (typeof version !== 'string') return [];
-  return version.split(/[.-]/).map((part) => {
-    const num = Number(part);
-    return Number.isNaN(num) ? part : num;
-  });
-};
-
-const compareVersions = (a, b) => {
-  const partsA = toVersionParts(a);
-  const partsB = toVersionParts(b);
-  const maxLen = Math.max(partsA.length, partsB.length);
-
-  for (let i = 0; i < maxLen; i += 1) {
-    const partA = partsA[i];
-    const partB = partsB[i];
-
-    if (partA === undefined) return -1;
-    if (partB === undefined) return 1;
-
-    if (typeof partA === 'number' && typeof partB === 'number') {
-      if (partA !== partB) return partA - partB;
-    } else {
-      const stringA = String(partA);
-      const stringB = String(partB);
-      if (stringA !== stringB) return stringA.localeCompare(stringB);
-    }
-  }
-
-  return 0;
-};
-
-const pickLatestVersion = (runtimes, languageName) => {
-  if (!Array.isArray(runtimes)) return null;
-
-  const matches = runtimes.filter((runtime) => {
-    if (!runtime) return false;
-    if (runtime.language === languageName) return true;
-    if (Array.isArray(runtime.aliases)) {
-      return runtime.aliases.includes(languageName);
-    }
-    return false;
-  });
-
-  if (matches.length === 0) return null;
-
-  matches.sort((a, b) => compareVersions(b.version, a.version));
-  return matches[0].version || null;
-};
-
-const resolveLanguageConfig = async (language) => {
+const resolvePistonConfig = (language) => {
   if (!language) return null;
-
   const normalized = (LANGUAGE_ALIASES[language.toLowerCase()] || language).toLowerCase();
-  const config = LANGUAGE_CONFIGS[normalized];
-  if (!config) return null;
-
-  let resolvedVersion = config.version;
-  if (!resolvedVersion || resolvedVersion === 'latest') {
-    try {
-      const runtimes = await fetchRuntimes();
-      resolvedVersion = pickLatestVersion(runtimes, config.name) || resolvedVersion;
-    } catch {
-      resolvedVersion = resolvedVersion === 'latest' ? null : resolvedVersion;
-    }
-  }
-
-  if (!resolvedVersion || resolvedVersion === 'latest') return null;
-
-  return {
-    ...config,
-    version: resolvedVersion,
-  };
+  return PISTON_LANGUAGE_CONFIGS[normalized] || null;
 };
 
 /**
@@ -240,13 +153,13 @@ const resolveLanguageConfig = async (language) => {
  * @returns {Promise<Object>} - Object containing stdout, stderr, and output information
  */
 export const executeCode = async (language, code, stdin = '') => {
-  // Get the language configuration
-  const langConfig = await resolveLanguageConfig(language);
-  
-  if (!langConfig) {
+  const normalizedLanguage = (LANGUAGE_ALIASES[language?.toLowerCase()] || language || '').toLowerCase();
+  const pistonConfig = resolvePistonConfig(normalizedLanguage);
+
+  if (!pistonConfig) {
     return {
       success: false,
-      error: `Language '${language}' is not supported by the Piston API. Supported languages: ${Object.keys(LANGUAGE_CONFIGS).join(', ')}`,
+      error: `Language '${language}' is not supported by the Piston API. Supported languages: ${Object.keys(PISTON_LANGUAGE_CONFIGS).join(', ')}`,
       stdout: '',
       stderr: '',
       output: '',
@@ -255,34 +168,24 @@ export const executeCode = async (language, code, stdin = '') => {
     };
   }
 
-  // Piston API endpoint
-  const PISTON_API_URL = 'https://emkc.org/api/v2/piston/execute';
-
-  // Prepare the request body
+  const fileName = LANGUAGE_CONFIGS[normalizedLanguage]?.fileName || 'main.txt';
   const requestBody = {
-    language: langConfig.name,
-    version: langConfig.version,
-    files: [
-      {
-        name: langConfig.fileName,
-        content: code,
-      },
-    ],
+    language: pistonConfig.language,
+    version: pistonConfig.version,
+    files: [{ name: fileName, content: code }],
   };
 
-  // Add stdin if provided (even if whitespace-only)
   if (stdin !== undefined && stdin !== null && stdin !== '') {
     requestBody.stdin = stdin;
-    console.log("📥 stdin added to request:", JSON.stringify(stdin));
+    console.log('📥 stdin added to request:', JSON.stringify(stdin));
   } else {
-    console.warn("⚠️ stdin is empty or not provided");
+    console.warn('⚠️ stdin is empty or not provided');
   }
 
-  console.log("📝 Piston API Request Body:", JSON.stringify(requestBody, null, 2));
+  console.log('📝 Piston API Request Body:', JSON.stringify(requestBody, null, 2));
 
   try {
-    // Make the API call
-    const response = await fetch(PISTON_API_URL, {
+    const response = await fetch(`${PISTON_BASE_URL}/execute`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -296,43 +199,30 @@ export const executeCode = async (language, code, stdin = '') => {
 
     const data = await response.json();
 
-    console.log("📤 Piston API Response:", JSON.stringify(data, null, 2));
+    console.log('📤 Piston API Response:', JSON.stringify(data, null, 2));
 
-    // Extract output information from the response
-    const stdout = data.run?.stdout || '';
-    const stderr = data.run?.stderr || '';
-    const compileOutput = data.compile?.output || '';
-    const compileStderr = data.compile?.stderr || '';
-    const runtime = data.run?.code !== undefined ? data.run.code : null;
-
-    // Determine if there was an error
-    const hasError = stderr || compileStderr || runtime !== 0;
-    const errorOutput = stderr || compileStderr || '';
-    
-    // Build the output string
-    let output = '';
-    if (compileOutput) {
-      output += compileOutput;
-    }
-    if (stdout) {
-      output += stdout;
-    }
-    if (errorOutput) {
-      output += errorOutput;
-    }
+    const compileOutput = data?.compile?.stdout || '';
+    const compileStderr = data?.compile?.stderr || '';
+    const stdout = data?.run?.stdout || '';
+    const stderr = data?.run?.stderr || '';
+    const exitCode = typeof data?.run?.code === 'number' ? data.run.code : null;
+    const hasCompileError = Boolean(compileStderr);
+    const hasRuntimeError = Boolean(stderr) || (exitCode !== null && exitCode !== 0);
+    const hasError = hasCompileError || hasRuntimeError;
+    const errorOutput = compileStderr || stderr || (hasError ? stdout : '');
 
     return {
       success: !hasError,
       error: hasError ? errorOutput : null,
       stdout,
       stderr,
-      output: output.trim(),
-      compileOutput: compileOutput.trim(),
-      compileStderr: compileStderr.trim(),
-      compile: data.compile,
-      runtime,
-      exitCode: runtime,
-      executionTime: data.run?.executionTime,
+      output: stdout.trim(),
+      compileOutput,
+      compileStderr,
+      compile: data?.compile || null,
+      runtime: data?.run || null,
+      exitCode,
+      executionTime: null,
     };
   } catch (error) {
     console.error('Piston API Error:', error);

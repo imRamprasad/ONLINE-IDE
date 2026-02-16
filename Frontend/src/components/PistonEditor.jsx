@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import MonacoEditor from "@monaco-editor/react";
 import OutputConsole from "./OutputConsole";
-import { executeCode, LANGUAGE_CONFIGS } from "../utils/pistonApi";
+import { executeCode, LANGUAGE_CONFIGS } from "../utils/codeRunner";
 
 const STARTER_CODE = {
   python: "print('Hello from Python')",
@@ -30,6 +30,14 @@ const MONACO_LANGUAGE_MAP = {
 };
 
 const PistonEditor = ({ isDarkMode = true }) => {
+  const runnerProvider = (
+    import.meta.env.VITE_CODE_RUNNER_PROVIDER || "judge0"
+  ).toLowerCase();
+  const runnerLabel = runnerProvider === "piston" ? "Piston" : "Judge0 CE";
+  const runnerDescription =
+    runnerProvider === "piston"
+      ? "Run code instantly in the browser using the public Piston API."
+      : "Run code instantly in the browser using the public Judge0 CE API.";
   const languages = useMemo(() => Object.keys(LANGUAGE_CONFIGS), []);
   const editorRef = useRef(null);
   const [language, setLanguage] = useState("python");
@@ -166,9 +174,9 @@ const PistonEditor = ({ isDarkMode = true }) => {
     <div className="max-w-5xl mx-auto p-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-2xl font-semibold">Quick Run (Piston)</h2>
+          <h2 className="text-2xl font-semibold">Quick Run ({runnerLabel})</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Run code instantly in the browser using the public Piston API.
+            {runnerDescription}
           </p>
         </div>
         <div className="flex gap-2">
