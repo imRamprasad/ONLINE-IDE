@@ -89,7 +89,7 @@ const NavigationLinks = ({ isDarkMode = true }) => {
   const baseUrl = window.location.origin;
 
   useEffect(() => {
-    document.title = "Online IDE - Glad432";
+    document.title = "CUTM IDE - Online Code Editor and Compiler";
   }, []);
 
   return (

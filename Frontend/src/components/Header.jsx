@@ -44,7 +44,7 @@ const Header = ({ isDarkMode, toggleTheme }) => {
             className="text-2xl font-bold ide-title hover:text-slate-500 dark:hover:text-slate-300 absolute left-1/2 -translate-x-1/2 flex items-center gap-2 transition"
           >
             <img
-              src="/Cutm_Logo.png"
+              src="https://res.cloudinary.com/digyil242/image/upload/v1770704169/Cutm_skill_badge_logo-modified_llrcjk.png"
               alt="CUTM SkillBridge"
               className="h-8 w-8 rounded-full"
             />
