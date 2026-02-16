@@ -40,7 +40,10 @@ const parseLanguageOverrides = () => {
     if (!parsed || typeof parsed !== "object") return {};
     return parsed;
   } catch (error) {
-    console.warn("Invalid VITE_JUDGE0_LANGUAGE_MAP JSON. Falling back to defaults.");
+    console.warn(
+      "Invalid VITE_JUDGE0_LANGUAGE_MAP JSON. Falling back to defaults.",
+      error
+    );
     return {};
   }
 };
