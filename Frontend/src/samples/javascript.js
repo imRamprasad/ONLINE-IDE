@@ -1,1 +1,1 @@
- console.log("JS executed successfully at");
+ console.log("JS executed successfully");
