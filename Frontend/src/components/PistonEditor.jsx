@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import MonacoEditor from "@monaco-editor/react";
 import OutputConsole from "./OutputConsole";
 import { executeCode, LANGUAGE_CONFIGS } from "../utils/codeRunner";
+import { disableEditorClipboard } from "../utils/disableEditorClipboard";
 
 const STARTER_CODE = {
   python: "print('Hello from Python')",
@@ -19,7 +20,6 @@ const MONACO_LANGUAGE_MAP = {
   go: "go",
   java: "java",
   javascript: "javascript",
-  julia: "julia",
   kotlin: "kotlin",
   perl: "perl",
   python: "python",
@@ -40,6 +40,7 @@ const PistonEditor = ({ isDarkMode = true }) => {
       : "Run code instantly in the browser using the public Judge0 CE API.";
   const languages = useMemo(() => Object.keys(LANGUAGE_CONFIGS), []);
   const editorRef = useRef(null);
+  const clipboardCleanupRef = useRef(null);
   const [language, setLanguage] = useState("python");
   const [code, setCode] = useState(STARTER_CODE.python);
   const [stdin, setStdin] = useState("");
@@ -101,6 +102,14 @@ const PistonEditor = ({ isDarkMode = true }) => {
     executionTime,
     exitCode,
   ]);
+
+  useEffect(() => {
+    return () => {
+      if (clipboardCleanupRef.current) {
+        clipboardCleanupRef.current();
+      }
+    };
+  }, []);
 
   const handleLanguageChange = (event) => {
     const nextLanguage = event.target.value;
@@ -222,6 +231,10 @@ const PistonEditor = ({ isDarkMode = true }) => {
               onChange={(newValue) => setCode(newValue || "")}
               onMount={(editor) => {
                 editorRef.current = editor;
+                if (clipboardCleanupRef.current) {
+                  clipboardCleanupRef.current();
+                }
+                clipboardCleanupRef.current = disableEditorClipboard(editor);
                 editor.focus();
               }}
               height="260px"

@@ -63,13 +63,6 @@ export const LANGUAGE_CONFIGS = {
     compileTimeout: 10000,
     runTimeout: 10000,
   },
-  julia: {
-    name: 'julia',
-    version: 'latest',
-    fileName: 'main.jl',
-    compileTimeout: 10000,
-    runTimeout: 10000,
-  },
   kotlin: {
     name: 'kotlin',
     version: 'latest',
@@ -128,7 +121,6 @@ const PISTON_LANGUAGE_CONFIGS = {
   go: { language: 'go', version: 'latest' },
   java: { language: 'java', version: 'latest' },
   javascript: { language: 'javascript', version: 'latest' },
-  julia: { language: 'julia', version: 'latest' },
   kotlin: { language: 'kotlin', version: 'latest' },
   perl: { language: 'perl', version: 'latest' },
   python: { language: 'python', version: 'latest' },

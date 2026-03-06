@@ -78,11 +78,6 @@ const navLinks = [
     text: "Perl",
     classes: "motion-delay-[1250ms]",
   },
-  {
-    to: "/julia",
-    text: "Julia",
-    classes: "motion-delay-[1350ms]",
-  },
 ];
 
 const NavigationLinks = ({ isDarkMode = true }) => {

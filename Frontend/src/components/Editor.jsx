@@ -12,12 +12,13 @@ import {
 } from "../utils/constants";
 import { apiFetch } from "../utils/apifetch";
 import blocker from "../utils/blocker.js";
+import { disableEditorClipboard } from "../utils/disableEditorClipboard";
 import { useNavigate } from "react-router-dom";
 import { PiFileHtmlFill, PiFileCssFill, PiFileJsFill } from "react-icons/pi";
 import { MdPreview } from "react-icons/md";
 import { IoMdRefreshCircle } from "react-icons/io";
 import { SlSizeFullscreen } from "react-icons/sl";
-import { FaSpinner, FaDownload, FaPlay, FaCopy } from "react-icons/fa6";
+import { FaSpinner, FaDownload, FaPlay } from "react-icons/fa6";
 import { FaTrashAlt, FaShare } from "react-icons/fa";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 
@@ -116,6 +117,7 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
   const [previewStyleUrl, setPreviewStyleUrl] = useState("");
 
   const editorRefs = useRef({});
+  const clipboardCleanupRefs = useRef({});
   const scriptUrlRef = useRef(null);
   const styleUrlRef = useRef(null);
 
@@ -174,6 +176,16 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
   }, []);
 
   useEffect(() => {
+    return () => {
+      Object.values(clipboardCleanupRefs.current).forEach((cleanup) => {
+        if (typeof cleanup === "function") {
+          cleanup();
+        }
+      });
+    };
+  }, []);
+
+  useEffect(() => {
     const editorCode = JSON.parse(sessionStorage.getItem(storageKey));
     const { html, css, javascript } = editorCode;
 
@@ -192,6 +204,12 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
 
   const editorDidMount = (id) => (editor, monaco) => {
     editorRefs.current[id] = editor;
+
+    if (clipboardCleanupRefs.current[id]) {
+      clipboardCleanupRefs.current[id]();
+    }
+
+    clipboardCleanupRefs.current[id] = disableEditorClipboard(editor);
   };
 
   const buildPreviewDocument = useCallback((html, css, javascript, scriptUrl, styleUrl) => {
@@ -462,53 +480,6 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  };
-
-  const copyHtml = async () => {
-    const editorCode = JSON.parse(sessionStorage.getItem(storageKey));
-
-    if (!editorCode) {
-      return;
-    }
-
-    const { html, css, javascript } = editorCode;
-
-    if (
-      html.trim().length === 0 &&
-      css.trim().length === 0 &&
-      javascript.trim().length === 0
-    ) {
-      return;
-    }
-
-    const cleanedHtml = html
-      .replace(/<html.*?>|<\/html>/gi, "")
-      .replace(/<head.*?>|<\/head>/gi, "")
-      .replace(/<body.*?>|<\/body>/gi, "");
-
-    const finalHtml = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <style>${css || ""}</style>
-        </head>
-        <body>
-          ${cleanedHtml || ""}
-          <script>${javascript || ""}</script>
-        </body>
-      </html>
-    `;
-
-    try {
-      await navigator.clipboard.writeText(finalHtml);
-    } catch {
-      Swal.fire({
-        title: "Failed to copy",
-        text: "Could not copy the HTML to clipboard.",
-        icon: "error",
-      });
-    }
   };
 
   const scrollToLastLine = (editorId) => {
@@ -1341,18 +1312,6 @@ const Editor = ({ isDarkMode, value, title, shareIdData, storageNamespace }) => 
         loadingAction === "generate" ||
         loadingAction === "refactor",
       color: "ide-action-button is-clear",
-      loadingAction: null,
-      iconLoading: null,
-    },
-    {
-      text: "Copy",
-      icon: <FaCopy className="mr-2 mt-1" />,
-      onClick: copyHtml,
-      disabled:
-        code.html.trim().length === 0 &&
-        code.css.trim().length === 0 &&
-        code.javascript.trim().length === 0,
-      color: "ide-action-button is-copy",
       loadingAction: null,
       iconLoading: null,
     },

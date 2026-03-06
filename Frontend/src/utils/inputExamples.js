@@ -171,13 +171,6 @@ chomp($name);
 print "Hello, $name!\\n";`,
     preview: "Input: Nancy\nOutput: Hello, Nancy!"
   },
-  julia: {
-    title: "Julia - Read Input",
-    code: `# Read from stdin
-line = readline()
-println("Hello, $line!")`,
-    preview: "Input: Oscar\nOutput: Hello, Oscar!"
-  },
   sql: {
     title: "SQL - Note",
     code: `-- SQL doesn't read stdin interactively.

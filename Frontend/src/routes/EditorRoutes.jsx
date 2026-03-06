@@ -6,7 +6,6 @@ import {
   SiRust,
   SiRuby,
   SiPerl,
-  SiJulia,
   SiGnubash,
 } from "react-icons/si";
 import { FaGolang } from "react-icons/fa6";
@@ -38,7 +37,6 @@ import sampleRuby from "../samples/ruby.rb?raw";
 import sampleTypeScript from "../samples/typescript.ts?raw";
 import sampleKotlin from "../samples/kotlin.kt?raw";
 import samplePerl from "../samples/perl.pl?raw";
-import sampleJulia from "../samples/julia.jl?raw";
 import sampleBash from "../samples/bash.sh?raw";
 import sampleHtml from "../samples/index.html?raw";
 import sampleCss from "../samples/style.css?raw";
@@ -128,12 +126,6 @@ const languages = [
     language: "perl",
     icon: SiPerl,
     sampleCode: samplePerl,
-  },
-  {
-    path: "/julia",
-    language: "julia",
-    icon: SiJulia,
-    sampleCode: sampleJulia,
   },
 ];
 

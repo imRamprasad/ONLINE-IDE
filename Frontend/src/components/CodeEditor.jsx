@@ -5,6 +5,7 @@ import InputHelperModal from "./InputHelperModal";
 import ShareLinkModal from "../utils/ShareLinkModal.js";
 import { executeCode } from "../utils/codeRunner";
 import { apiFetch } from "../utils/apifetch";
+import { disableEditorClipboard } from "../utils/disableEditorClipboard";
 import {
   SESSION_STORAGE_SHARELINKS_KEY,
   LOCAL_STORAGE_TOKEN_KEY,
@@ -19,7 +20,6 @@ import {
   FaSpinner,
   FaPlay,
   FaDownload,
-  FaCopy,
 } from "react-icons/fa6";
 import { FaTrashAlt, FaShare } from "react-icons/fa";
 import Swal from "sweetalert2/dist/sweetalert2.js";
@@ -47,8 +47,6 @@ const CodeEditor = ({
     sessionStorage.getItem(stdinStorageKey) || ""
   );
   const [deviceType, setDeviceType] = useState("pc");
-  const [cpyBtnState, setCpyBtnState] = useState("Copy");
-  const [timeoutId, setTimeoutId] = useState(null);
   const [loadingActionRun, setLoadingActionRun] = useState(null);
   const [loadingActionGen, setLoadingActionGen] = useState(null);
   const [loadingActionRefactor, setLoadingActionRefactor] = useState(null);
@@ -61,6 +59,7 @@ const CodeEditor = ({
 
   const terminalRef = useRef(null);
   const editorRef = useRef(null);
+  const clipboardCleanupRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -106,7 +105,7 @@ const CodeEditor = ({
       savedOutput &&
       savedOutput
         .replace(
-          /^```(text|json|c|cpp|csharp|dart|go|java|javascript|julia|kotlin|mongodb|perl|python|ruby|rust|sql|typescript|verilog)[\r\n]*/m,
+          /^```(text|json|c|cpp|csharp|dart|go|java|javascript|kotlin|mongodb|perl|python|ruby|rust|sql|typescript|verilog)[\r\n]*/m,
           ""
         )
         .replace(/^```[\r\n]*/m, "")
@@ -169,8 +168,22 @@ const CodeEditor = ({
     }
   }, [output]);
 
+  useEffect(() => {
+    return () => {
+      if (clipboardCleanupRef.current) {
+        clipboardCleanupRef.current();
+      }
+    };
+  }, []);
+
   const handleEditorDidMount = (editor) => {
     editorRef.current = editor;
+
+    if (clipboardCleanupRef.current) {
+      clipboardCleanupRef.current();
+    }
+
+    clipboardCleanupRef.current = disableEditorClipboard(editor);
   };
 
   const runCode = async () => {
@@ -244,46 +257,6 @@ const CodeEditor = ({
     if (terminalRef.current) {
       terminalRef.current.clear();
     }
-  };
-
-  const handleCopy = async () => {
-    const content = sessionStorage.getItem(codeStorageKey);
-
-    if (content.length === 0) return;
-
-    try {
-      await navigator.clipboard.writeText(content);
-
-      const lastLineNumber = editorRef.current.getModel().getLineCount();
-      editorRef.current.revealLine(lastLineNumber);
-      editorRef.current.setSelection({
-        startLineNumber: 1,
-        startColumn: 1,
-        endLineNumber: lastLineNumber,
-        endColumn: editorRef.current
-          .getModel()
-          .getLineMaxColumn(lastLineNumber),
-      });
-
-      setCpyBtnState("Copied!");
-    } catch (err) {
-      console.error(err);
-      Swal.fire({
-        title: "Failed to copy",
-        text: `Could not copy the ${language} code to clipboard.`,
-        icon: "error",
-      });
-    }
-
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-
-    const newTimeoutId = setTimeout(() => {
-      setCpyBtnState("Copy");
-    }, 1500);
-
-    setTimeoutId(newTimeoutId);
   };
 
   const generateCodeMain = async () => {
@@ -980,10 +953,6 @@ const CodeEditor = ({
         mimeType = "application/x-perl";
         fileExtension = "pl";
         break;
-      case "julia":
-        mimeType = "application/x-julia";
-        fileExtension = "jl";
-        break;
       default:
         mimeType = "application/octet-stream";
         fileExtension = "txt";
@@ -1047,13 +1016,6 @@ const CodeEditor = ({
         isGenerateBtnPressed ||
         isRefactorBtnPressed ||
         loadingActionRun === "run",
-    },
-    {
-      action: handleCopy,
-      bgColor: "ide-action-button is-copy",
-      icon: <FaCopy className="mr-2 mt-1" />,
-      text: cpyBtnState,
-      disabled: code.trim().length === 0,
     },
     {
       action: () => downloadFile(code, "file", language),

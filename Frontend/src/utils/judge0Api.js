@@ -21,7 +21,6 @@ const DEFAULT_LANGUAGE_IDS = {
   go: 60,
   java: 62,
   javascript: 63,
-  julia: 93,
   kotlin: 78,
   perl: 85,
   python: 71,
